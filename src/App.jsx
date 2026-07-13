@@ -287,21 +287,40 @@ export default function App() {
         submittedAt: new Date().toISOString(),
         createdBy: currentUser.username || 'unknown_user'
       };
-      
+      // ยิงข้อมูลไปหลังบ้าน
+      const response = await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newStudent)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save to database');
+      }
+      const savedStudent = await response.json();
+
       // เอาของใหม่ต่อหน้า array เก่า
-      setStudents([newStudent, ...students]);
+      setStudents([savedStudent, ...students]);
       setActiveTab('list');
     } catch(error) {
       console.error("Error adding document: ", error);
+      alert("Error saving data. Please check Vercel Logs.");
     }
   }
 
   const handleUpdateStudent = async (id, updatedData) => {
     try {
+      const response = await fetch('/api/students', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...updatedData })
+      });
+
+      if(response.ok){
       const updatedList = students.map(s => s.id === id ? { ...s, ...updatedData } : s);
       setStudents(updatedList);
       setActiveTab('list');
       setEditingStudent(null);
+      }
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -310,8 +329,16 @@ export default function App() {
   const handleDeleteStudent = async (id) => {
     if (window.confirm("Are you sure you want to completely delete this student's record? This action cannot be undone.")) {
       try {
+        const response = await fetch('/api/students', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        
+        if(response.ok){
         const filteredList = students.filter(s => s.id !== id);
         setStudents(filteredList);
+        }
       } catch (error) {
         console.error("Error deleting document: ", error);
       }
@@ -321,8 +348,16 @@ export default function App() {
   // Update Status Handler
  const handleUpdateStatus = async(id, newStatus) => {
     try {
-      const updatedList = students.map(s => s.id === id ? { ...s, status: newStatus } : s);
-      setStudents(updatedList);
+      const response = await fetch('/api/students', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus })
+      });
+
+      if (response.ok) {
+        const updatedList = students.map(s => s.id === id ? { ...s, status: newStatus } : s);
+        setStudents(updatedList);
+      }
     } catch (error) {
       console.error("Error updating status: ", error);
     }
