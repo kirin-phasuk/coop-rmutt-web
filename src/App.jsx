@@ -1,5 +1,3 @@
-import { db } from './firebase';
-import { collection, onSnapshot, addDoc, updateDoc, doc, query, orderBy , deleteDoc} from 'firebase/firestore';
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Users, LayoutDashboard, LogOut, PlusCircle, CheckSquare, FileSpreadsheet, 
@@ -125,6 +123,7 @@ const getRegion = (country) => {
   return 'AS';
 };
 
+// Cookie Helper Functions
 const setCookie = (name, value, days) => {
   let expires = "";
   if (days) {
@@ -211,21 +210,23 @@ export default function App() {
     return savedUsers ? JSON.parse(savedUsers) : USERS;
   });
   const [currentUser, setCurrentUser] = useState(null);
-  const [students, setStudents] = useState([]);
+
+  // โหลดนักศึกษาชั่วคราวจาก LocalStorage ป้องกันจอขาว
+  const [students, setStudents] = useState(() => {
+    const saved = localStorage.getItem('mock_students');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [activeTab, setActiveTab] = useState('dashboard'); 
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
-  /* บันทึก Users ลง LocalStorage อัตโนมัติทุกครั้งที่มีการเพิ่ม/ลบ
-  useEffect(() => {
-    localStorage.setItem('mock_users', JSON.stringify(users));
-  }, [users]);*/
   useEffect(() => {
   fetch('/api/students') // เรียกใช้ API ตัวเอง
     .then(res => res.json())
     .then(data => setStudents(data));
   }, []);
-  
+
   // ตรวจสอบ Cookie เมื่อเปิดเว็บ (Auto-login)
   useEffect(() => {
     const savedUserId = getCookie('auth_user_id');
@@ -233,19 +234,6 @@ export default function App() {
       setCurrentUser(users[savedUserId]); // ล็อกอินอัตโนมัติ
     }
   }, [users]); // ผูกกับ users เผื่อมีการอัปเดต
-
-  // ดึงข้อมูลจาก Firestore แบบ Real-time
-  useEffect(() => {
-    const q = query(collection(db, 'students'), orderBy('submittedAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const studentData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setStudents(studentData);
-    });
-    return () => unsubscribe();
-  }, []);
 
   // Login Handler
   const handleLogin = (username, password) => {
@@ -265,63 +253,60 @@ export default function App() {
     eraseCookie('auth_user_id');
   };
 
+  if (!currentUser) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   // Create Record Handler
-  const handleAddStudent = async (studentData) => {
-    try{
-        await addDoc(collection(db, 'students'),{
+   const handleAddStudent = async (studentData) => {
+    try {
+      const newStudent = {
         ...studentData,
+        id: Date.now().toString(), // สร้าง ID ชั่วคราว
         status: STATUSES.SUBMITTED,
         submittedAt: new Date().toISOString(),
-        createdBy: currentUser.username || 'unknow_user'
-      });
+        createdBy: currentUser.username || 'unknown_user'
+      };
+      
+      // เอาของใหม่ต่อหน้า array เก่า
+      setStudents([newStudent, ...students]);
       setActiveTab('list');
-    }
-    catch(error){
+    } catch(error) {
       console.error("Error adding document: ", error);
     }
   }
 
-  //edite information of student
   const handleUpdateStudent = async (id, updatedData) => {
-  try {
-    const studentRef = doc(db, 'students', id); // ต้อง import doc มาด้วย
-    await updateDoc(studentRef, updatedData);
-    setActiveTab('list'); // กลับไปหน้าตาราง
-    setEditingStudent(null); // ล้างค่า state
-  } catch (error) {
-    console.error("Error updating document: ", error);
-  }
+    try {
+      const updatedList = students.map(s => s.id === id ? { ...s, ...updatedData } : s);
+      setStudents(updatedList);
+      setActiveTab('list');
+      setEditingStudent(null);
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
   };
 
-
   const handleDeleteStudent = async (id) => {
-      console.log("พยายามลบ ID:", id);
-      if (window.confirm("Are you sure you want to completely delete this student's record? This action cannot be undone.")) {
-        try {
-          console.log(id);
-          await deleteDoc(doc(db, 'students', id));
-          console.log("ลบสำเร็จ");
-        } catch (error) {
-          console.error("Error deleting document: ", error);
-        }
+    if (window.confirm("Are you sure you want to completely delete this student's record? This action cannot be undone.")) {
+      try {
+        const filteredList = students.filter(s => s.id !== id);
+        setStudents(filteredList);
+      } catch (error) {
+        console.error("Error deleting document: ", error);
       }
+    }
   };
 
   // Update Status Handler
-  const handleUpdateStatus = async(id, newStatus) => {
+ const handleUpdateStatus = async(id, newStatus) => {
     try {
-      const studentRef = doc(db, 'students', id);
-      await updateDoc(studentRef, {
-        status: newStatus
-      });
+      const updatedList = students.map(s => s.id === id ? { ...s, status: newStatus } : s);
+      setStudents(updatedList);
     } catch (error) {
       console.error("Error updating status: ", error);
     }
   };
-
-  if (!currentUser) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 print:h-auto print:block">
