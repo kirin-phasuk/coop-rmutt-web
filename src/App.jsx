@@ -221,19 +221,29 @@ export default function App() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchStudents = async () => {
       try {
         const response = await fetch('/api/students');
-        if (response.ok) {
-          const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error('API Error'); // ถ้า 500 ให้กระโดดไป catch ทันที
+        }
+
+        const data = await response.json();
+        
+        // 🛡️ ป้องกันจอขาว: เช็คก่อนว่าสิ่งที่ได้มาคือ Array จริงๆ ค่อยให้ React เอาไปโชว์
+        if (Array.isArray(data)) {
           setStudents(data);
+        } else {
+          console.error("API did not return array:", data);
+          setStudents([]); // บังคับเป็น Array ว่าง
         }
       } catch (error) {
         console.error("Failed to fetch from PostgreSQL:", error);
+        setStudents([]); // บังคับเป็น Array ว่าง ป้องกันจอขาว
       }
     };
-
     fetchStudents();
   }, []);
 
