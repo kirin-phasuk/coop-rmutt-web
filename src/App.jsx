@@ -152,7 +152,7 @@ const eraseCookie = (name) => {
 const canEditRecord = (user, record) => {
   if (!user || !record) return false;
   if (user.role === 'admin') return true; 
-  if (user.role === 'staff') {
+  if (user.role === 'coordinator') {
     return [
       STATUSES.SUBMITTED, 
       STATUSES.IN_PROG_FAC, 
@@ -219,7 +219,7 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('mock_users', JSON.stringify(users));
   }, [users]);
-  
+
  useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -395,7 +395,7 @@ export default function App() {
             active={activeTab === 'list'} onClick={() => {setActiveTab('list'); setEditingStudent(null); }} 
           />
           
-          {/* New Registration is now available for BOTH Staff and Admin */}
+          {/* New Registration is now available for BOTH Coordinator and Admin */}
           <NavItem 
             icon={<PlusCircle size={20} />} label="New Registration" 
             active={activeTab === 'entry'} onClick={() => {setActiveTab('entry'); setEditingStudent(null); }} 
@@ -636,14 +636,14 @@ function GuideView() {
             <Users className="w-5 h-5 text-blue-500" /> 1. User Roles
           </h3>
           <ul className="list-disc list-inside space-y-2 ml-4">
-            <li><strong>Staff:</strong> Responsible for registering new student records and viewing the master data list.</li>
+            <li><strong>Coordinator:</strong> Responsible for registering new student records and viewing the master data list.</li>
             <li><strong>Administrator:</strong> Responsible for progressing, approving, or rejecting student requests, as well as managing user accounts.</li>
           </ul>
         </section>
 
         <section>
           <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <PlusCircle className="w-5 h-5 text-emerald-500" /> 2. Data Entry (Staff Only)
+            <PlusCircle className="w-5 h-5 text-emerald-500" /> 2. Data Entry (Coordinator Only)
           </h3>
           <ol className="list-decimal list-inside space-y-2 ml-4">
             <li>Navigate to the <strong>"New Registration"</strong> menu on the sidebar.</li>
@@ -679,7 +679,7 @@ function GuideView() {
             <UserCog className="w-5 h-5 text-purple-500" /> 4. User Account Management (Administrator Only)
           </h3>
           <p className="ml-4">
-            Administrators are authorized to create new accounts for both Staff and Administrators via the "User Management" tab. Furthermore, they can revoke existing Staff accounts (Revocation of other Administrators is strictly prohibited).
+            Administrators are authorized to create new accounts for both Coordinator and Administrators via the "User Management" tab. Furthermore, they can revoke existing Coordinator accounts (Revocation of other Administrators is strictly prohibited).
           </p>
         </section>
         
@@ -1232,7 +1232,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
-            <input type="text" name="username" placeholder="e.g., staff02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="text" name="username" placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
@@ -1242,7 +1242,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
             <select name="role" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
-              <option value="staff">Staff</option>
+              <option value="coordinator">Coordinator</option>
               <option value="student">Student</option>
             </select>
           </div>
@@ -1276,7 +1276,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                       user.role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
-                      user.role === 'staff' ? 'bg-blue-100 text-blue-800 border-blue-200' : 
+                      user.role === 'coordinator' ? 'bg-blue-100 text-blue-800 border-blue-200' : 
                       'bg-orange-100 text-orange-800 border-orange-200'
                     }`}>
                       <span className="capitalize">{user.role}</span>
