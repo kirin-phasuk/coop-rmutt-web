@@ -222,9 +222,19 @@ export default function App() {
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
   useEffect(() => {
-  fetch('/api/students') // เรียกใช้ API ตัวเอง
-    .then(res => res.json())
-    .then(data => setStudents(data));
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch('/api/students');
+        if (response.ok) {
+          const data = await response.json();
+          setStudents(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch from PostgreSQL:", error);
+      }
+    };
+
+    fetchStudents();
   }, []);
 
   // ตรวจสอบ Cookie เมื่อเปิดเว็บ (Auto-login)
