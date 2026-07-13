@@ -211,16 +211,15 @@ export default function App() {
   });
   const [currentUser, setCurrentUser] = useState(null);
 
-  // โหลดนักศึกษาชั่วคราวจาก LocalStorage ป้องกันจอขาว
-  const [students, setStudents] = useState(() => {
-    const saved = localStorage.getItem('mock_students');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [students, setStudents] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard'); 
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
+  useEffect(() => {
+    localStorage.setItem('mock_users', JSON.stringify(users));
+  }, [users]);
+  
  useEffect(() => {
     const fetchStudents = async () => {
       try {
