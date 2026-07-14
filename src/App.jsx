@@ -3,7 +3,7 @@ import {
   Users, LayoutDashboard, LogOut, PlusCircle, CheckSquare, FileSpreadsheet, 
   Clock, CheckCircle2, AlertCircle, Building, GraduationCap, Plane, Save, 
   Navigation, Globe2, MapPin, Map, BookOpen, UserPlus, UserCog, Trash2, 
-  Printer, Search, Filter, Edit, X, FileText, Banknote, Paperclip, ArrowLeftCircle, ArrowRightCircle, XCircle
+  Printer, Search, Filter, Edit, X, FileText, Banknote, Paperclip, ArrowLeftCircle, ArrowRightCircle, XCircle,Download
 } from 'lucide-react';
 
 // --- Mock Data & Constants ---
@@ -1155,7 +1155,12 @@ function EditStudentView({ student, onUpdate, onCancel }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   {student.facultyScholarshipFileName && <p className="text-xs text-blue-600 mb-2 font-medium border border-blue-100 bg-blue-50 inline-block px-2 py-1 rounded">Current file: {student.facultyScholarshipFileName}</p>}
+                    {/* 👉 แก้ปุ่มให้เป็นลิงก์ a href โหลดไฟล์ได้จริง */}
+                    {student.facultyScholarshipFileName && (
+                      <a href={student.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
+                        <Download size={14}/> View Current Document
+                      </a>
+                    )}
                    <input type="file" name="facultyScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
                  </div>
                  <div>
@@ -1173,8 +1178,13 @@ function EditStudentView({ student, onUpdate, onCancel }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   {student.uniScholarshipFileName && <p className="text-xs text-blue-600 mb-2 font-medium border border-blue-100 bg-blue-50 inline-block px-2 py-1 rounded">Current file: {student.uniScholarshipFileName}</p>}
-                   <input type="file" name="uniScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
+                   {/* 👉 แก้ปุ่มให้เป็นลิงก์ a href โหลดไฟล์ได้จริง */}
+                  {student.uniScholarshipFileName && (
+                      <a href={student.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
+                        <Download size={14}/> View Current Document
+                      </a>
+                  )}
+                  <input type="file" name="uniScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -1190,7 +1200,12 @@ function EditStudentView({ student, onUpdate, onCancel }) {
               </h5>
               <div>
                  <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                 {student.visaFileName && <p className="text-xs text-blue-600 mb-2 font-medium border border-blue-100 bg-blue-50 inline-block px-2 py-1 rounded">Current file: {student.visaFileName}</p>}
+                  {/* 👉 แก้ปุ่มให้เป็นลิงก์ a href โหลดไฟล์ได้จริง */}
+                  {student.visaFileName && (
+                      <a href={student.visaFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
+                        <Download size={14}/> View Current Document
+                      </a>
+                  )}
                  <input type="file" name="visaFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
               </div>
             </div>
@@ -1674,16 +1689,30 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
 
-                {student.facultyScholarshipFileName && (
-                  <a 
-                    href={student.facultyScholarshipFileName} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
-                  >
-                    <Download size={14}/> View Document
-                  </a>
-                )}
+                {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
+                <td className="px-4 py-3 text-center print:hidden">
+                  <div className="flex flex-col gap-1.5 items-center justify-center">
+                    {s.facultyScholarshipFileName && (
+                      <a href={s.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
+                        <Download size={12} /> Faculty
+                      </a>
+                    )}
+                    {s.uniScholarshipFileName && (
+                      <a href={s.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
+                        <Download size={12} /> University
+                      </a>
+                    )}
+                    {s.visaFileName && (
+                      <a href={s.visaFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-orange-600 hover:text-orange-800 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-orange-200">
+                        <Download size={12} /> Visa
+                      </a>
+                    )}
+                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName && !s.visaFileName) && (
+                      <span className="text-slate-400 text-xs">-</span>
+                    )}
+                  </div>
+                </td>
+                
                 <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
                   <div className="flex items-center justify-center gap-2">
                     
