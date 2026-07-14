@@ -276,6 +276,30 @@ export default function App() {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // --- ฟังก์ชันใหม่: อัปโหลดไฟล์ขึ้น Vercel Blob ---
+  const uploadFileToCloud = async (file) => {
+    if (!file) return null;
+    
+    // ตั้งชื่อไฟล์ใหม่ป้องกันชื่อซ้ำกัน (ใช้ Timestamp นำหน้า)
+    const uniqueFileName = `${Date.now()}_${file.name}`;
+    
+    try {
+      const response = await fetch(`/api/upload?filename=${encodeURIComponent(uniqueFileName)}`, {
+        method: 'POST',
+        body: file, // ส่งตัวไฟล์ไปตรงๆ
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+      
+      const data = await response.json();
+      return data.url; // คืนค่าลิงก์ URL ของไฟล์ เช่น https://.../1234_doc.pdf
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert(`Failed to upload ${file.name}`);
+      return null;
+    }
+  };
+
   // Create Record Handler
    const handleAddStudent = async (studentData) => {
     try {
@@ -718,6 +742,28 @@ function DataEntryView({ onSubmit }) {
     processFile('uniScholarshipFile');
     processFile('visaFile');
 
+    // อัปโหลดไฟล์ (ถ้ามี) และนำ URL มาเก็บแทนที่ชื่อไฟล์เดิม
+    // สังเกตว่า property size จะเป็น 0 ถ้าไม่ได้แนบไฟล์มา
+    if (facFile && facFile.size > 0) {
+      data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
+    } else {
+      data.facultyScholarshipFileName = null;
+    }
+    delete data.facultyScholarshipFile; // ลบ Object ไฟล์ทิ้งก่อนลง DB
+
+    if (uniFile && uniFile.size > 0) {
+      data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
+    } else {
+      data.uniScholarshipFileName = null;
+    }
+    delete data.uniScholarshipFile;
+
+    if (visaFile && visaFile.size > 0) {
+      data.visaFileName = await uploadFileToCloud(visaFile);
+    } else {
+      data.visaFileName = null;
+    }
+    delete data.visaFile;
 
     const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
@@ -948,7 +994,29 @@ function EditStudentView({ student, onUpdate, onCancel }) {
     processFile('uniScholarshipFile');
     processFile('visaFile');
 
-    
+    // อัปโหลดไฟล์ (ถ้ามี) และนำ URL มาเก็บแทนที่ชื่อไฟล์เดิม
+    // สังเกตว่า property size จะเป็น 0 ถ้าไม่ได้แนบไฟล์มา
+    if (facFile && facFile.size > 0) {
+      data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
+    } else {
+      data.facultyScholarshipFileName = null;
+    }
+    delete data.facultyScholarshipFile; // ลบ Object ไฟล์ทิ้งก่อนลง DB
+
+    if (uniFile && uniFile.size > 0) {
+      data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
+    } else {
+      data.uniScholarshipFileName = null;
+    }
+    delete data.uniScholarshipFile;
+
+    if (visaFile && visaFile.size > 0) {
+      data.visaFileName = await uploadFileToCloud(visaFile);
+    } else {
+      data.visaFileName = null;
+    }
+    delete data.visaFile;
+
     const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
     for (let field of requiredFields) {
@@ -1354,7 +1422,17 @@ function ApprovalView({ students, onUpdateStatus }) {
                   <p><strong>Visa Doc:</strong> {student.visaFileName ? 'Attached' : 'Pending'}</p>
                 </div>
               </div>
-
+              
+              {student.facultyScholarshipFileName && (
+                <a 
+                  href={student.facultyScholarshipFileName} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
+                >
+                  <Download size={14}/> View Document
+                </a>
+              )}
               {/* Action Buttons based on Workflow */}
               <div className="flex flex-col gap-2 w-full lg:w-48 lg:shrink-0">
                 
@@ -1388,13 +1466,22 @@ function ApprovalView({ students, onUpdateStatus }) {
                     All Steps Completed
                   </div>
                 )}
-              
-          
+            
                 {filteredStudents.length === 0 && (
                   <div className="text-center py-16 text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-300">
                     <CheckSquare size={48} className="mx-auto text-slate-300 mb-4" />
                     <p>No records match the selected criteria.</p>
                   </div>
+                )}
+                {student.facultyScholarshipFileName && (
+                  <a 
+                    href={student.facultyScholarshipFileName} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
+                  >
+                    <Download size={14}/> View Document
+                  </a>
                 )}
                 </div>
               </div>
@@ -1586,7 +1673,17 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
-                
+
+                {student.facultyScholarshipFileName && (
+                  <a 
+                    href={student.facultyScholarshipFileName} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
+                  >
+                    <Download size={14}/> View Document
+                  </a>
+                )}
                 <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
                   <div className="flex items-center justify-center gap-2">
                     
@@ -1622,6 +1719,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
               </tr>
             )}
+            
           </tbody>
         </table>
       </div>
