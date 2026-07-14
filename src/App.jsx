@@ -724,7 +724,7 @@ function DataEntryView({ onSubmit }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  async;const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
@@ -973,7 +973,7 @@ function EditStudentView({ student, onUpdate, onCancel }) {
 
   if (!student) return null;
 
-  async;const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
@@ -1760,7 +1760,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
 function LoginScreen({ onLogin }) {
   const [error, setError] = useState('');
 
-  async;const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const username = e.target.username.value;
     const password = e.target.password.value;
