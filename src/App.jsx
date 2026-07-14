@@ -485,7 +485,7 @@ export default function App() {
               onDelete={handleDeleteStudent}
             />
           )}
-          {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} />}
+          {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud}/>}
           {activeTab === 'edit' && (
             <EditStudentView 
               student={editingStudent} 
@@ -494,6 +494,7 @@ export default function App() {
                 setActiveTab('list');
                 setEditingStudent(null);
               }} 
+              uploadFileToCloud={uploadFileToCloud}
             />
           )}
           {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} />}
@@ -720,7 +721,7 @@ function GuideView() {
   );
 }
 
-function DataEntryView({ onSubmit }) {
+function DataEntryView({ onSubmit ,uploadFileToCloud}) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
