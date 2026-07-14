@@ -1,5 +1,11 @@
 import { put } from '@vercel/blob';
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(request, response) {
   // อนุญาตเฉพาะ Method POST
   if (request.method !== 'POST') {
