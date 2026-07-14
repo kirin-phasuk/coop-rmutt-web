@@ -721,28 +721,31 @@ function GuideView() {
   );
 }
 
-function DataEntryView({ onSubmit ,uploadFileToCloud}) {
+function DataEntryView({ onSubmit, uploadFileToCloud }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     
+    // ดึงตัว File Object ออกมาจากฟอร์มให้ถูกต้อง
     const facFile = formData.get('facultyScholarshipFile');
     const uniFile = formData.get('uniScholarshipFile');
     const visaFile = formData.get('visaFile');
 
-    // อัปโหลดไฟล์ (ถ้ามี) และนำ URL มาเก็บแทนที่ชื่อไฟล์เดิม
-    // สังเกตว่า property size จะเป็น 0 ถ้าไม่ได้แนบไฟล์มา
+    // อัปโหลด Faculty File
     if (facFile && facFile.size > 0) {
       data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
     } else {
       data.facultyScholarshipFileName = null;
     }
-    delete data.facultyScholarshipFile; // ลบ Object ไฟล์ทิ้งก่อนลง DB
+    delete data.facultyScholarshipFile; 
 
+    // อัปโหลด Uni File
     if (uniFile && uniFile.size > 0) {
       data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
     } else {
@@ -750,6 +753,7 @@ function DataEntryView({ onSubmit ,uploadFileToCloud}) {
     }
     delete data.uniScholarshipFile;
 
+    // อัปโหลด Visa File
     if (visaFile && visaFile.size > 0) {
       data.visaFileName = await uploadFileToCloud(visaFile);
     } else {
@@ -769,17 +773,19 @@ function DataEntryView({ onSubmit ,uploadFileToCloud}) {
     if (!isComplete) {
       setError('Please complete all required fields.');
       setSuccess('');
+      setIsSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
-    onSubmit(data);
+    await onSubmit(data); 
     
     setError('');
-    setSuccess('Record successfully saved and submitted. (Status: Submitted)');
+    setSuccess('Record successfully saved and submitted.');
     e.target.reset();
+    setIsSubmitting(false);
     
     setTimeout(() => setSuccess(''), 4000);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -951,8 +957,8 @@ function DataEntryView({ onSubmit ,uploadFileToCloud}) {
         </div>
 
         <div className="flex justify-end pt-4">
-          <button type="submit" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2">
-            <Save size={20} /> Save and Submit
+          <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+            <Save size={20} /> {isSubmitting ? 'Uploading...' : 'Save and Submit'}
           </button>
         </div>
       </form>
@@ -962,11 +968,13 @@ function DataEntryView({ onSubmit ,uploadFileToCloud}) {
 
 function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!student) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
@@ -974,26 +982,27 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
     const uniFile = formData.get('uniScholarshipFile');
     const visaFile = formData.get('visaFile');
 
-    // อัปโหลดไฟล์ (ถ้ามี) และนำ URL มาเก็บแทนที่ชื่อไฟล์เดิม
-    // สังเกตว่า property size จะเป็น 0 ถ้าไม่ได้แนบไฟล์มา
+    // อัปโหลดไฟล์ Faculty ใหม่ (ถ้ามีการเลือกไฟล์ใหม่) ถ้าไม่มี ให้คงลิงก์เดิมไว้
     if (facFile && facFile.size > 0) {
       data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
     } else {
-      data.facultyScholarshipFileName = null;
+      data.facultyScholarshipFileName = student.facultyScholarshipFileName || null;
     }
-    delete data.facultyScholarshipFile; // ลบ Object ไฟล์ทิ้งก่อนลง DB
+    delete data.facultyScholarshipFile; 
 
+    // อัปโหลดไฟล์ Uni ใหม่ (ถ้ามีการเลือกไฟล์ใหม่)
     if (uniFile && uniFile.size > 0) {
       data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
     } else {
-      data.uniScholarshipFileName = null;
+      data.uniScholarshipFileName = student.uniScholarshipFileName || null;
     }
     delete data.uniScholarshipFile;
 
+    // อัปโหลดไฟล์ Visa ใหม่ (ถ้ามีการเลือกไฟล์ใหม่)
     if (visaFile && visaFile.size > 0) {
       data.visaFileName = await uploadFileToCloud(visaFile);
     } else {
-      data.visaFileName = null;
+      data.visaFileName = student.visaFileName || null;
     }
     delete data.visaFile;
 
@@ -1008,14 +1017,17 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
 
     if (!isComplete) {
       setError('Please complete all required fields.');
+      setIsSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
-    onUpdate(student.id, data);
+    await onUpdate(student.id, data);
+    setIsSubmitting(false);
   };
+
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <div className="flex justify-between items-center mb-6">
@@ -1135,7 +1147,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                    {/* 👉 แก้ปุ่มให้เป็นลิงก์ a href โหลดไฟล์ได้จริง */}
+                    {/* ลิงก์ดูไฟล์เดิม */}
                     {student.facultyScholarshipFileName && (
                       <a href={student.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
                         <Download size={14}/> View Current Document
@@ -1158,7 +1170,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   {/* 👉 แก้ปุ่มให้เป็นลิงก์ a href โหลดไฟล์ได้จริง */}
+                   {/* ลิงก์ดูไฟล์เดิม */}
                   {student.uniScholarshipFileName && (
                       <a href={student.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
                         <Download size={14}/> View Current Document
@@ -1180,7 +1192,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
               </h5>
               <div>
                  <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                  {/* 👉 แก้ปุ่มให้เป็นลิงก์ a href โหลดไฟล์ได้จริง */}
+                  {/* ลิงก์ดูไฟล์เดิม */}
                   {student.visaFileName && (
                       <a href={student.visaFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
                         <Download size={14}/> View Current Document
@@ -1197,8 +1209,8 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
           <button type="button" onClick={onCancel} className="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 px-8 py-3 rounded-lg font-medium transition-colors">
             Cancel
           </button>
-          <button type="submit" className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2">
-            <Save size={20} /> Update Record
+          <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}>
+            <Save size={20} /> {isSubmitting ? 'Updating...' : 'Update Record'}
           </button>
         </div>
       </form>
