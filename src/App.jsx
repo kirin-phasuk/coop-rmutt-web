@@ -729,18 +729,9 @@ function DataEntryView({ onSubmit }) {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     
-    // Extract file names from file objects for mock saving purposes
-    const processFile = (key) => {
-      const file = formData.get(key);
-      if (file && file.name) {
-        data[`${key}Name`] = file.name;
-      }
-      delete data[key]; // ลบ File object ออกเพื่อป้องกันปัญหาการบันทึกลง Database
-    };
-
-    processFile('facultyScholarshipFile');
-    processFile('uniScholarshipFile');
-    processFile('visaFile');
+    const facFile = formData.get('facultyScholarshipFile');
+    const uniFile = formData.get('uniScholarshipFile');
+    const visaFile = formData.get('visaFile');
 
     // อัปโหลดไฟล์ (ถ้ามี) และนำ URL มาเก็บแทนที่ชื่อไฟล์เดิม
     // สังเกตว่า property size จะเป็น 0 ถ้าไม่ได้แนบไฟล์มา
@@ -968,7 +959,7 @@ function DataEntryView({ onSubmit }) {
   );
 }
 
-function EditStudentView({ student, onUpdate, onCancel }) {
+function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
   const [error, setError] = useState('');
 
   if (!student) return null;
@@ -977,22 +968,10 @@ function EditStudentView({ student, onUpdate, onCancel }) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
-    // Extract file names for mock save
-    const processFile = (key) => {
-      const file = formData.get(key);
-      if (file && file.name) {
-        data[`${key}Name`] = file.name;
-      } else {
-        // Keep existing file name if no new file is uploaded
-        data[`${key}Name`] = student[`${key}Name`] || '';
-      }
-      delete data[key];
-    };
 
-    processFile('facultyScholarshipFile');
-    processFile('uniScholarshipFile');
-    processFile('visaFile');
+    const facFile = formData.get('facultyScholarshipFile');
+    const uniFile = formData.get('uniScholarshipFile');
+    const visaFile = formData.get('visaFile');
 
     // อัปโหลดไฟล์ (ถ้ามี) และนำ URL มาเก็บแทนที่ชื่อไฟล์เดิม
     // สังเกตว่า property size จะเป็น 0 ถ้าไม่ได้แนบไฟล์มา
