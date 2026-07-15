@@ -217,16 +217,18 @@ export default function App() {
     const savedUserId = getCookie('auth_user_id');
     if (savedUserId && users[savedUserId]) setCurrentUser(users[savedUserId]); 
   }, [users]); 
-
-  // Login Handler
-  if (users[username] && users[username].password === password) {
+  
+// Login Handler
+  const handleLogin = (username, password) => {
+    if (users[username] && users[username].password === password) {
       setCurrentUser(users[username]);
       setCookie('auth_user_id', username, 7); 
       setActiveTab('dashboard');
       return true; 
     } else {
       return false; 
-  }
+    }
+  };
 
   const handleLogout = () => {
     setCurrentUser(null);
