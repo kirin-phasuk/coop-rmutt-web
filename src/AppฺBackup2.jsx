@@ -7,14 +7,6 @@ import {
   ArrowRightCircle, XCircle,Download,Star, MessageSquare,
 } from 'lucide-react';
 
-// --- Constants & Config ---
-const FACULTIES = [
-  "Faculty of Engineering", "Faculty of Business Administration", "Faculty of Home Economics Technology",
-  "Faculty of Fine and Applied Arts", "Faculty of Agricultural Technology", "Faculty of Technical Education",
-  "Faculty of Architecture", "Faculty of Science and Technology", "Faculty of Mass Communication Technology",
-  "Faculty of Liberal Arts", "Faculty of Nursing", "Faculty of Integrative Medicine"
-];
-
 // --- Mock Data & Constants ---
 const USERS = {
   admin: { username: 'admin', password: '12345', role: 'admin', name: 'Administrator' },
@@ -33,6 +25,11 @@ const STATUSES = {
   REJECT_UNI: 'Rejected - University Scholarship',
   APP_UNI: 'Approve University Scholarship',
   
+  IN_PROG_VISA: 'In Progress Visa',
+  HOLD_VISA: 'On Hold - Visa',
+  REJECT_VISA: 'Rejected - Visa',
+  APP_VISA: 'Approve Visa',
+  
   COMPLETE: 'Complete'
 };
 
@@ -48,6 +45,11 @@ const STATUS_COLORS = {
   [STATUSES.HOLD_UNI]: 'bg-amber-50 text-amber-700 border-amber-200',
   [STATUSES.REJECT_UNI]: 'bg-red-50 text-red-700 border-red-200',
   [STATUSES.APP_UNI]: 'bg-teal-50 text-teal-700 border-teal-200',
+  
+  [STATUSES.IN_PROG_VISA]: 'bg-orange-50 text-orange-700 border-orange-200',
+  [STATUSES.HOLD_VISA]: 'bg-amber-50 text-amber-700 border-amber-200',
+  [STATUSES.REJECT_VISA]: 'bg-red-50 text-red-700 border-red-200',
+  [STATUSES.APP_VISA]: 'bg-green-100 text-green-800 border-green-300',
   
   [STATUSES.COMPLETE]: 'bg-slate-800 text-white border-slate-900 shadow-sm'
 };
@@ -80,7 +82,18 @@ const ACTION_MAP = {
   [STATUSES.APP_UNI]: [
     { label: 'Start Visa Review', next: STATUSES.IN_PROG_VISA, color: 'bg-orange-600 hover:bg-orange-700 text-white' }
   ],
-  
+  [STATUSES.IN_PROG_VISA]: [
+    { label: 'Approve (Visa)', next: STATUSES.APP_VISA, color: 'bg-green-600 hover:bg-green-700 text-white' },
+    { label: 'Hold', next: STATUSES.HOLD_VISA, color: 'bg-amber-500 hover:bg-amber-600 text-white' },
+    { label: 'Reject', next: STATUSES.REJECT_VISA, color: 'bg-red-500 hover:bg-red-600 text-white' }
+  ],
+  [STATUSES.HOLD_VISA]: [
+    { label: 'Resume', next: STATUSES.IN_PROG_VISA, color: 'bg-blue-500 hover:bg-blue-600 text-white' },
+    { label: 'Reject', next: STATUSES.REJECT_VISA, color: 'bg-red-500 hover:bg-red-600 text-white' }
+  ],
+  [STATUSES.APP_VISA]: [
+    { label: 'Mark as Complete', next: STATUSES.COMPLETE, color: 'bg-slate-800 hover:bg-slate-900 text-white' }
+  ]
 };
 
 // Generate years 2016 - 2036
@@ -136,31 +149,30 @@ const getCookie = (name) => {
 const eraseCookie = (name) => {   
   document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 };
-
-// Role Permission Checkers
+// ฟังก์ชันเช็คสิทธิ์การแก้ไขข้อมูล
 const canEditRecord = (user, record) => {
   if (!user || !record) return false;
-  if (user.role === 'admin' || user.role === 'universityCoordinator') return true; 
-  if (user.role === 'facultyCoordinator') return record.faculty === user.faculty;
-  if (user.role === 'student') return record.createdBy === user.username;
+  if (user.role === 'admin') return true; 
+  if (user.role === 'facultyCoordinator') {
+    return [
+      STATUSES.SUBMITTED, 
+      STATUSES.IN_PROG_FAC, 
+      STATUSES.IN_PROG_UNI
+    ].includes(record.status);
+  }
+  if (user.role === 'coordinator') {
+    return [
+      STATUSES.SUBMITTED, 
+      STATUSES.IN_PROG_FAC, 
+      STATUSES.IN_PROG_UNI
+    ].includes(record.status);
+  }
+  if (user.role === 'student') {
+    // ต้องเป็นสถานะ Submitted และ ผู้สร้างต้องตรงกับคนที่ล็อกอินอยู่
+    return record.status === STATUSES.SUBMITTED && record.createdBy === user.username;
+  }
   return false;
 };
-
-// Star Rating Component
-const StarRating = ({ rating, setRating, readOnly }) => {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star 
-          key={star} 
-          size={24} 
-          className={`cursor-pointer transition-colors ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'} ${readOnly ? 'pointer-events-none' : 'hover:scale-110'}`}
-          onClick={() => !readOnly && setRating(star)}
-        />
-      ))}
-    </div>
-  );
-}
 
 // Components 
 const Badge = ({ status }) => (
@@ -171,8 +183,16 @@ const Badge = ({ status }) => (
 
 function NavItem({ icon, label, active, onClick }) {
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-      {icon} <span className="font-medium text-sm">{label}</span>
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+        active 
+          ? 'bg-blue-600 text-white shadow-md' 
+          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+      }`}
+    >
+      {icon}
+      <span className="font-medium text-sm">{label}</span>
     </button>
   );
 }
@@ -180,46 +200,79 @@ function NavItem({ icon, label, active, onClick }) {
 function StatCard({ title, value, icon, color }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center text-white shadow-inner`}>{icon}</div>
-      <div><p className="text-sm text-slate-500 font-medium">{title}</p><p className="text-2xl font-bold text-slate-800">{value}</p></div>
+      <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center text-white shadow-inner`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm text-slate-500 font-medium">{title}</p>
+        <p className="text-2xl font-bold text-slate-800">{value}</p>
+      </div>
     </div>
   );
 }
 
 export default function App() {
+  // โหลดข้อมูล Users จาก LocalStorage (เพื่อไม่ให้บัญชีที่แอดมินสร้างใหม่หายไปตอนรีเฟรช)
   const [users, setUsers] = useState(() => {
     const savedUsers = localStorage.getItem('mock_users');
     return savedUsers ? JSON.parse(savedUsers) : USERS;
   });
   const [currentUser, setCurrentUser] = useState(null);
+
   const [students, setStudents] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard'); 
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
-  useEffect(() => { localStorage.setItem('mock_users', JSON.stringify(users)); }, [users]);
+  useEffect(() => {
+    localStorage.setItem('mock_users', JSON.stringify(users));
+  }, [users]);
 
  useEffect(() => {
     const fetchStudents = async () => {
       try {
         const response = await fetch('/api/students');
-        if (!response.ok) throw new Error('API Error'); 
+        
+        if (!response.ok) {
+          throw new Error('API Error'); // ถ้า 500 ให้กระโดดไป catch ทันที
+        }
+
         const data = await response.json();
-        if (Array.isArray(data)) setStudents(data);
+        
+        // 🛡️ ป้องกันจอขาว: เช็คก่อนว่าสิ่งที่ได้มาคือ Array จริงๆ ค่อยให้ React เอาไปโชว์
+        if (Array.isArray(data)) {
+          setStudents(data);
+        } else {
+          console.error("API did not return array:", data);
+          setStudents([]); // บังคับเป็น Array ว่าง
+        }
       } catch (error) {
-        console.error("Failed to fetch:", error);
+        console.error("Failed to fetch from PostgreSQL:", error);
+        setStudents([]); // บังคับเป็น Array ว่าง ป้องกันจอขาว
       }
     };
     fetchStudents();
   }, []);
 
+  // ตรวจสอบ Cookie เมื่อเปิดเว็บ (Auto-login)
   useEffect(() => {
     const savedUserId = getCookie('auth_user_id');
-    if (savedUserId && users[savedUserId]) setCurrentUser(users[savedUserId]); 
-  }, [users]); 
+    if (savedUserId && users[savedUserId]) {
+      setCurrentUser(users[savedUserId]); // ล็อกอินอัตโนมัติ
+    }
+  }, [users]); // ผูกกับ users เผื่อมีการอัปเดต
 
   // Login Handler
-  Z
+  const handleLogin = (username, password) => {
+    if (users[username] && users[username].password === password) {
+      setCurrentUser(users[username]);
+      setCookie('auth_user_id', username, 7); 
+      setActiveTab('dashboard');
+      return true; 
+    } else {
+      return false; 
+    }
+  };
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -227,18 +280,27 @@ export default function App() {
     eraseCookie('auth_user_id');
   };
 
-  if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
+  if (!currentUser) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
 
-  // Real Cloud Upload Vercel Blob
+  // --- ฟังก์ชันใหม่: อัปโหลดไฟล์ขึ้น Vercel Blob ---
   const uploadFileToCloud = async (file) => {
     if (!file) return null;
-    const fileExtension = file.name.split('.').pop();
-    const safeFileName = `${Date.now()}_doc.${fileExtension}`;
+    
+    // ตั้งชื่อไฟล์ใหม่ป้องกันชื่อซ้ำกัน (ใช้ Timestamp นำหน้า)
+    const uniqueFileName = `${Date.now()}_${file.name}`;
+    
     try {
-      const response = await fetch(`/api/upload?filename=${safeFileName}`, { method: 'POST', body: file });
+      const response = await fetch(`/api/upload?filename=${encodeURIComponent(uniqueFileName)}`, {
+        method: 'POST',
+        body: file, // ส่งตัวไฟล์ไปตรงๆ
+      });
+
       if (!response.ok) throw new Error('Upload failed');
+      
       const data = await response.json();
-      return data.url; 
+      return data.url; // คืนค่าลิงก์ URL ของไฟล์ เช่น https://.../1234_doc.pdf
     } catch (error) {
       console.error("Error uploading file:", error);
       alert(`Failed to upload ${file.name}`);
@@ -262,8 +324,12 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newStudent)
       });
-      if (!response.ok) throw new Error('Save failed');
+      if (!response.ok) {
+        throw new Error('Failed to save to database');
+      }
       const savedStudent = await response.json();
+
+      // เอาของใหม่ต่อหน้า array เก่า
       setStudents([savedStudent, ...students]);
       setActiveTab('list');
     } catch(error) {
@@ -286,7 +352,9 @@ export default function App() {
       setActiveTab('list');
       setEditingStudent(null);
       }
-    } catch (error) { console.error(error); }
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
   };
 
   const handleDeleteStudent = async (id) => {
@@ -342,7 +410,9 @@ export default function App() {
             </div>
             <div>
               <div className="text-sm font-medium text-white">{currentUser.name}</div>
-              <div className="text-xs text-blue-400 capitalize">{currentUser.role === 'facultyCoordinator' ? `Fac: ${currentUser.faculty}` : currentUser.role}</div>
+              <div className="text-xs text-blue-400 capitalize">
+                {currentUser.role}
+              </div>
             </div>
           </div>
         </div>
@@ -356,17 +426,25 @@ export default function App() {
             icon={<FileSpreadsheet size={20} />} label=" Spreadsheet" 
             active={activeTab === 'list'} onClick={() => {setActiveTab('list'); setEditingStudent(null); }} 
           />
-
-          {['admin', 'facultyCoordinator', 'student'].includes(currentUser.role) && (
-            <NavItem icon={<PlusCircle size={20} />} label="New Registration" active={activeTab === 'entry'} onClick={() => {setActiveTab('entry'); setEditingStudent(null); }} />
-          )}
-
-          {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
-            <NavItem icon={<CheckSquare size={20} />} label="Approvals" active={activeTab === 'approval'} onClick={() => {setActiveTab('approval'); setEditingStudent(null);}} />
-          )}
-
+          
+          {/* New Registration is now available for BOTH Coordinator and Admin */}
+          <NavItem 
+            icon={<PlusCircle size={20} />} label="New Registration" 
+            active={activeTab === 'entry'} onClick={() => {setActiveTab('entry'); setEditingStudent(null); }} 
+          />
+          
+          {/* Role Based Navigation */}
           {currentUser.role === 'admin' && (
-              <NavItem icon={<UserCog size={20} />} label="User Management" active={activeTab === 'users'} onClick={() => {setActiveTab('users'); setEditingStudent(null); }} />
+            <>
+              <NavItem 
+                icon={<CheckSquare size={20} />} label="Approvals" 
+                active={activeTab === 'approval'} onClick={() => {setActiveTab('approval'); setEditingStudent(null);}} 
+              />
+              <NavItem 
+                icon={<UserCog size={20} />} label="User Management" 
+                active={activeTab === 'users'} onClick={() => {setActiveTab('users'); setEditingStudent(null); }} 
+              />
+            </>
           )}
           
           <div className="pt-4 mt-4 border-t border-slate-800">
@@ -378,8 +456,12 @@ export default function App() {
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors w-full px-3 py-2 rounded-md hover:bg-slate-800">
-            <LogOut size={20} /><span>Log Out</span>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors w-full px-3 py-2 rounded-md hover:bg-slate-800"
+          >
+            <LogOut size={20} />
+            <span>Log Out</span>
           </button>
         </div>
       </aside>
@@ -392,20 +474,40 @@ export default function App() {
             {activeTab === 'list' && 'Spreadsheet : Student Records'}
             {activeTab === 'entry' && 'Student Registration Form'}
             {activeTab === 'approval' && 'Approval Management System'}
+            {activeTab === 'guide' && 'System User Guide'}
             {activeTab === 'users' && 'User Account Management'}
             {activeTab === 'edit' && 'Edit Student Record'}
-            {activeTab === 'guide' && 'System User Guide'}
           </h2>
         </header>
 
         <div className="flex-1 overflow-auto p-4 md:p-8 print:p-0 print:overflow-visible print:block">
           {activeTab === 'dashboard' && <DashboardView students={students} />}
-          {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent} />}
-          {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
-          {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
-          {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser}/>}
-          {activeTab === 'users' && <UserManagementView users={users} setUsers={setUsers} currentUser={currentUser}/>}
+          {activeTab === 'list' && (
+            <StudentListView 
+              students={students} 
+              currentUser={currentUser} // ส่ง User เข้าไป
+              onEdit={(student) => {
+                setEditingStudent(student); // ส่งฟังก์ชัน Edit เข้าไป
+                setActiveTab('edit');
+              }} 
+              onDelete={handleDeleteStudent}
+            />
+          )}
+          {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud}/>}
+          {activeTab === 'edit' && (
+            <EditStudentView 
+              student={editingStudent} 
+              onUpdate={handleUpdateStudent} 
+              onCancel={() => {
+                setActiveTab('list');
+                setEditingStudent(null);
+              }} 
+              uploadFileToCloud={uploadFileToCloud}
+            />
+          )}
+          {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} />}
           {activeTab === 'guide' && <GuideView />}
+          {activeTab === 'users' && <UserManagementView users={users} setUsers={setUsers} currentUser={currentUser}/>}
         </div>
       </main>
     </div>
@@ -416,19 +518,15 @@ export default function App() {
 
 function DashboardView({ students }) {
   const [selectedZone, setSelectedZone] = useState('ALL');
+
   const stats = useMemo(() => {
     return {
       total: students.length,
       submitted: students.filter(s => s.status === STATUSES.SUBMITTED).length,
-      inProgress_Fac: students.filter(s => s.status === STATUSES.IN_PROG_FAC).length,
-      approved_Fac: students.filter(s => s.status === STATUSES.APP_FAC).length,
-      holdOn_Fac: students.filter(s => s.status === STATUSES.HOLD_FAC).length,
-      rejected_Fac: students.filter(s => s.status === STATUSES.REJECT_FAC).length,
-      inProgress_Uni: students.filter(s => s.status === STATUSES.IN_PROG_UNI).length,
-      approved_Uni: students.filter(s => s.status === STATUSES.APP_UNI).length,
-      holdOn_Uni: students.filter(s => s.status === STATUSES.HOLD_UNI).length,
-      rejected_Uni: students.filter(s => s.status === STATUSES.REJECT_UNI).length,
-      complete: students.filter(s => s.status === STATUSES.COMPLETE).length,
+      inProgress: students.filter(s => s.status === STATUSES.IN_PROG_FAC ,STATUSES.IN_PROG_UNI ,STATUSES.IN_PROG_VISA).length,
+      approved: students.filter(s => s.status === STATUSES.APP_FAC, STATUSES.APP_UNI, STATUSES.APP_VISA).length,
+      holdOn: students.filter(s => s.status === STATUSES.HOLD_FAC, STATUSES.HOLD_UNI, STATUSES.HOLD_VISA).length,
+      rejected: students.filter(s => s.status === STATUSES.REJECT_FAC, STATUSES.REJECT_UNI, STATUSES.REJECT_VISA).length,
     };
   }, [students]);
 
@@ -452,15 +550,10 @@ function DashboardView({ students }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard title="Total Records" value={stats.total} icon={<Users />} color="bg-slate-500" />
         <StatCard title="Submitted" value={stats.submitted} icon={<Clock />} color="bg-yellow-500" />
-        <StatCard title="In Progress Fac" value={stats.inProgress_Fac} icon={<AlertCircle />} color="bg-blue-500" />
-        <StatCard title="Approved Fac" value={stats.approved_Fac} icon={<CheckCircle2 />} color="bg-green-500" />
-        <StatCard title="Hold On Fac" value={stats.holdOn_Fac} icon={<CheckCircle2 />} color="bg-orange-500" />
-        <StatCard title="Rejected Fac" value={stats.rejected_Fac} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="In Progress Uni" value={stats.inProgress_Uni} icon={<AlertCircle />} color="bg-blue-500" />
-        <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} color="bg-green-500" />
-        <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<CheckCircle2 />} color="bg-orange-500" />
-        <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="Complete" value={stats.complete} icon={<XCircle />} color="bg-red-500" />
+        <StatCard title="In Progress" value={stats.inProgress} icon={<AlertCircle />} color="bg-blue-500" />
+        <StatCard title="Approved" value={stats.approved} icon={<CheckCircle2 />} color="bg-green-500" />
+        <StatCard title="Hold On" value={stats.holdOn} icon={<CheckCircle2 />} color="bg-orange-500" />
+        <StatCard title="Rejected" value={stats.rejected} icon={<XCircle />} color="bg-red-500" />
       </div>
 
       {/* Map & Region Details */}
@@ -562,7 +655,81 @@ function DashboardView({ students }) {
   );
 }
 
-function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
+function GuideView() {
+  return (
+    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+      <div className="flex items-center gap-3 mb-6 border-b pb-4">
+        <BookOpen className="text-blue-600 w-8 h-8 flex-shrink-0" />
+        <h2 className="text-xl md:text-2xl font-bold text-slate-800">RMUTT CWIE International Guide</h2>
+      </div>
+
+      <div className="space-y-8 text-slate-700">
+        <section>
+          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-500" /> 1. User Roles
+          </h3>
+          <ul className="list-disc list-inside space-y-2 ml-4">
+            <li><strong>Coordinator:</strong> Responsible for registering new student records and viewing the master data list.</li>
+            <li><strong>Administrator:</strong> Responsible for progressing, approving, or rejecting student requests, as well as managing user accounts.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-emerald-500" /> 2. Data Entry (Coordinator Only)
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 ml-4">
+            <li>Navigate to the <strong>"New Registration"</strong> menu on the sidebar.</li>
+            <li>Complete all required fields. Incomplete forms will trigger a validation error.</li>
+            <li>Click the <strong>"Save and Submit"</strong> button at the bottom of the form.</li>
+            <li>The initial status of a newly created record is always <Badge status={STATUSES.SUBMITTED} />.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <CheckSquare className="w-5 h-5 text-orange-500" /> 3. Approval Workflow (Administrator Only)
+          </h3>
+          <p className="mb-2 ml-4">The approval process consists of two primary stages:</p>
+          <ol className="list-decimal list-inside space-y-3 ml-4">
+            <li>
+              <strong>Acceptance Stage:</strong> Newly submitted requests are marked as "Submitted". The administrator must click <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded border border-blue-200">Accept for In Progress</span> to advance the status.
+            </li>
+            <li>
+              <strong>Decision Stage:</strong> Once In Progress, the administrator can select from three actions:
+              <div className="mt-2 ml-6 flex flex-wrap gap-2">
+                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded border border-green-200">Approve</span>
+                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded border border-yellow-200">Put on Hold</span>
+                <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded border border-red-200">Reject</span>
+              </div>
+            </li>
+            <li>Administrators may revert a processed decision by clicking <strong>"Revert to In Progress"</strong>.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <UserCog className="w-5 h-5 text-purple-500" /> 4. User Account Management (Administrator Only)
+          </h3>
+          <p className="ml-4">
+            Administrators are authorized to create new accounts for both Coordinator and Administrators via the "User Management" tab. Furthermore, they can revoke existing Coordinator accounts (Revocation of other Administrators is strictly prohibited).
+          </p>
+        </section>
+        
+        <section>
+          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-indigo-500" /> 5. Viewing All Records
+          </h3>
+          <p className="ml-4">
+            All authorized personnel can access the <strong>"Spreadsheet"</strong> to view comprehensive student data in a spreadsheet format, facilitating efficient auditing and data export.
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function DataEntryView({ onSubmit, uploadFileToCloud }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -572,28 +739,37 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
     setIsSubmitting(true);
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-
-    // Auto-assign faculty if FacCoord, else use form value
-    if (currentUser.role === 'facultyCoordinator') {
-      data.faculty = currentUser.faculty;
-    }
     
     // ดึงตัว File Object ออกมาจากฟอร์มให้ถูกต้อง
     const facFile = formData.get('facultyScholarshipFile');
-    // อัปโหลด Faculty File
-    if (facFile && facFile.size > 0) {data.facultyScholarshipFileName = await uploadFileToCloud(facFile);} 
-    else {data.facultyScholarshipFileName = null;}
-    delete data.facultyScholarshipFile; 
-    
-    // ดึงตัว File Object ออกมาจากฟอร์มให้ถูกต้อง
     const uniFile = formData.get('uniScholarshipFile');
+    const visaFile = formData.get('visaFile');
+
+    // อัปโหลด Faculty File
+    if (facFile && facFile.size > 0) {
+      data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
+    } else {
+      data.facultyScholarshipFileName = null;
+    }
+    delete data.facultyScholarshipFile; 
+
     // อัปโหลด Uni File
-    if (uniFile && uniFile.size > 0) {data.uniScholarshipFileName = await uploadFileToCloud(uniFile);} 
-    else { data.uniScholarshipFileName = null;}
+    if (uniFile && uniFile.size > 0) {
+      data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
+    } else {
+      data.uniScholarshipFileName = null;
+    }
     delete data.uniScholarshipFile;
 
-    // Required fields base on Student
-    const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
+    // อัปโหลด Visa File
+    if (visaFile && visaFile.size > 0) {
+      data.visaFileName = await uploadFileToCloud(visaFile);
+    } else {
+      data.visaFileName = null;
+    }
+    delete data.visaFile;
+
+    const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
     for (let field of requiredFields) {
       if (!data[field] || String(data[field]).trim() === "") {
@@ -613,6 +789,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
     await onSubmit(data); 
+    
     setError('');
     setSuccess('Record successfully saved and submitted.');
     e.target.reset();
@@ -648,17 +825,30 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Prefix</label><select name="prefix" className="w-full px-3 py-2 border rounded-md" required><option value="">Select...</option><option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option></select></div>
-            <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" className="w-full px-3 py-2 border rounded-md" /></div>
             <div>
-              <label className="block text-sm font-medium mb-1">Faculty</label>
-              <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" required disabled={currentUser.role === 'facultyCoordinator'} defaultValue={currentUser.role === 'facultyCoordinator' ? currentUser.faculty : ''}>
-                <option value="">Select Faculty...</option>
-                {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+              <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+              <select name="prefix" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="">Select...</option>
+                <option value="Mr.">Mr.</option>
+                <option value="Ms.">Ms.</option>
+                <option value="Mrs.">Mrs.</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+              <input type="text" name="firstName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+              <input type="text" name="lastName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">GPAX</label>
+              <input type="number" step="0.01" min="0" max="4" name="gpax" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">English Proficiency Test</label>
+              <input type="text" name="engTest" placeholder="e.g., TOEIC 600, IELTS 6.0" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
             </div>
           </div>
         </div>
@@ -667,31 +857,63 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Country</label><input type="text" name="country" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
-            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Organization Name</label>
+              <input type="text" name="company" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
+              <input type="text" name="country" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Position / Job Title</label>
+              <input type="text" name="position" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Academic Year</label>
+              <select name="year" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="">Select Year...</option>
+                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Semester</label>
+              <select name="semester" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="">Select Semester...</option>
+                {SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Section 3: Schedule */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Travel and Internship Schedule</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Departure Date</label><input type="date" name="departureDate" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship Start Date</label><input type="date" name="startDate" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship End Date</label><input type="date" name="endDate" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Return Date</label><input type="date" name="returnDate" className="w-full px-3 py-2 border rounded-md" /></div>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Departure Date</label>
+              <input type="date" name="departureDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Internship Start Date</label>
+              <input type="date" name="startDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Internship End Date</label>
+              <input type="date" name="endDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Return Date</label>
+              <input type="date" name="returnDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+            </div>
           </div>
         </div>
 
         {/* Section 4: Document Attachments */}
-        {['admin', 'facultyCoordinator', 'universityCoordinator','student'].includes(currentUser.role) && (
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <Paperclip size={18} /> Scholarship & Visa Documents
+          </h4>
           <div className="space-y-6">
             
             {/* 4.1 Faculty Scholarship */}
@@ -702,11 +924,11 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="file" name="facultyScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="file" name="facultyScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
-                   <input type="number" name="facultyScholarshipAmount" min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
+                   <input type="number" name="facultyScholarshipAmount" min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
                  </div>
               </div>
             </div>
@@ -719,18 +941,28 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="file" name="uniScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="file" name="uniScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
-                   <input type="number" name="uniScholarshipAmount" min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
+                   <input type="number" name="uniScholarshipAmount" min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
                  </div>
               </div>
             </div>
-             {currentUser.role === 'student' && <p className="text-xs text-red-500 mt-2">Students cannot upload scholarship files directly. Please contact your Faculty Coordinator.</p>}
+
+            {/* 4.3 Visa */}
+            <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
+              <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
+                <FileText size={16} className="text-blue-600"/> 3. Visa Application Document
+              </h5>
+              <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                 <input type="file" name="visaFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
+              </div>
+            </div>
+
           </div>
         </div>
-        )}
 
         <div className="flex justify-end pt-4">
           <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
@@ -742,20 +974,11 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   );
 }
 
-function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser  }) {
+function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Local state for star rating
-  const [facScore, setFacScore] = useState(student.facScore || 0);
-  const [uniScore, setUniScore] = useState(student.uniScore || 0);
-  // Role Checks
-  if (!student) return null;
-  const isStudent = currentUser.role === 'student';
-  const isFac = currentUser.role === 'facultyCoordinator';
-  const isUni = currentUser.role === 'universityCoordinator';
-  const isAdmin = currentUser.role === 'admin';
 
-  const isCompleteProgress = student.status === STATUSES.COMPLETE;
+  if (!student) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -765,27 +988,33 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
     const facFile = formData.get('facultyScholarshipFile');
     const uniFile = formData.get('uniScholarshipFile');
-    const projPdf = formData.get('projectPdfFile');
-    const projReport = formData.get('projectReportFile');
+    const visaFile = formData.get('visaFile');
 
-    // File Uploads
-    if (facFile && facFile.size > 0) data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
-    else data.facultyScholarshipFileName = student.facultyScholarshipFileName || null;
+    // อัปโหลดไฟล์ Faculty ใหม่ (ถ้ามีการเลือกไฟล์ใหม่) ถ้าไม่มี ให้คงลิงก์เดิมไว้
+    if (facFile && facFile.size > 0) {
+      data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
+    } else {
+      data.facultyScholarshipFileName = student.facultyScholarshipFileName || null;
+    }
     delete data.facultyScholarshipFile; 
 
-    if (uniFile && uniFile.size > 0) data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
-    else data.uniScholarshipFileName = student.uniScholarshipFileName || null;
+    // อัปโหลดไฟล์ Uni ใหม่ (ถ้ามีการเลือกไฟล์ใหม่)
+    if (uniFile && uniFile.size > 0) {
+      data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
+    } else {
+      data.uniScholarshipFileName = student.uniScholarshipFileName || null;
+    }
     delete data.uniScholarshipFile;
 
-    if (projPdf && projPdf.size > 0) data.projectPdfFileName = await uploadFileToCloud(projPdf);
-    else data.projectPdfFileName = student.projectPdfFileName || null;
-    delete data.projectPdfFile;
+    // อัปโหลดไฟล์ Visa ใหม่ (ถ้ามีการเลือกไฟล์ใหม่)
+    if (visaFile && visaFile.size > 0) {
+      data.visaFileName = await uploadFileToCloud(visaFile);
+    } else {
+      data.visaFileName = student.visaFileName || null;
+    }
+    delete data.visaFile;
 
-    if (projReport && projReport.size > 0) data.projectReportFileName = await uploadFileToCloud(projReport);
-    else data.projectReportFileName = student.projectReportFileName || null;
-    delete data.projectReportFile;
-
-    const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
+    const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
     for (let field of requiredFields) {
       if (!data[field] || String(data[field]).trim() === "") {
@@ -810,10 +1039,14 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Edit className="text-orange-500" /> Edit Student Record</h3>
-        <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
+        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <Edit className="text-orange-500" /> Edit Student Record
+        </h3>
+        <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors">
+          <X size={20} />
+        </button>
       </div>
-      
+
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-700 shadow-sm animate-pulse">
           <AlertCircle size={20} className="text-red-600 flex-shrink-0" />
@@ -822,57 +1055,96 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
       )}
       
       <form onSubmit={handleSubmit} className="space-y-8">
-        
-        {/* Section 1: Personal Data */}
-        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
+        <div className="bg-orange-50/50 p-6 rounded-lg border border-orange-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Prefix</label>
-            <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border rounded-md bg-white">
-              <option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option>
-            </select></div>
-            <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border rounded-md" /></div>
             <div>
-              <label className="block text-sm font-medium mb-1">Faculty</label>
-              <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" defaultValue={student.faculty} disabled={isUni || isFac || isStudent}>
-                {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+              <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+              <select name="prefix" defaultValue={student.prefix} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                <option value="">Select...</option>
+                <option value="Mr.">Mr.</option>
+                <option value="Ms.">Ms.</option>
+                <option value="Mrs.">Mrs.</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+              <input type="text" name="firstName" defaultValue={student.firstName} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+              <input type="text" name="lastName" defaultValue={student.lastName} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">GPAX</label>
+              <input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">English Proficiency Test</label>
+              <input type="text" name="engTest" defaultValue={student.engTest} placeholder="e.g., TOEIC 600, IELTS 6.0" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-orange-50/50 p-6 rounded-lg border border-orange-100">
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Organization Name</label>
+              <input type="text" name="company" defaultValue={student.company} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
+              <input type="text" name="country" defaultValue={student.country} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Position / Job Title</label>
+              <input type="text" name="position" defaultValue={student.position} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Academic Year</label>
+              <select name="year" defaultValue={student.year} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                <option value="">Select Year...</option>
+                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Semester</label>
+              <select name="semester" defaultValue={student.semester} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                <option value="">Select Semester...</option>
+                {SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}
               </select>
             </div>
           </div>
         </div>
 
-        {/* Section 2: Organization Data */}
-        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+        <div className="bg-orange-50/50 p-6 rounded-lg border border-orange-100">
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Travel and Internship Schedule</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Country</label><input type="text" name="country" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
-            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
-          </div>
-        </div>
-
-        {/* Section 3: Schedule */}
-        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Departure Date</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship Start Date</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship End Date</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Return Date</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border rounded-md" /></div>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Departure Date</label>
+              <input type="date" name="departureDate" defaultValue={student.departureDate} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Internship Start Date</label>
+              <input type="date" name="startDate" defaultValue={student.startDate} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Internship End Date</label>
+              <input type="date" name="endDate" defaultValue={student.endDate} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Return Date</label>
+              <input type="date" name="returnDate" defaultValue={student.returnDate} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+            </div>
           </div>
         </div>
 
         {/* Section 4: Document Attachments */}
-        {['admin', 'facultyCoordinator', 'universityCoordinator','student'].includes(currentUser.role) && (
-        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
+        <div className="bg-orange-50/50 p-6 rounded-lg border border-orange-100">
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <Paperclip size={18} /> Scholarship & Visa Documents
+          </h4>
           <div className="space-y-6">
             
             {/* 4.1 Faculty Scholarship */}
@@ -883,12 +1155,17 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName} target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
-                   <input type="file" name="facultyScholarshipFile" accept=".pdf" disabled={isStudent || isUni} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
+                    {/* ลิงก์ดูไฟล์เดิม */}
+                    {student.facultyScholarshipFileName && (
+                      <a href={student.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
+                        <Download size={14}/> View Current Document
+                      </a>
+                    )}
+                   <input type="file" name="facultyScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
-                   <input type="number" name="facultyScholarshipAmount" defaultValue={student.facultyScholarshipAmount} disabled={isStudent || isUni}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
+                   <input type="number" name="facultyScholarshipAmount" defaultValue={student.facultyScholarshipAmount} min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
                  </div>
               </div>
             </div>
@@ -900,434 +1177,51 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               </h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
-                    <label className="block text-sm font-medium mb-2">Attach PDF</label>
-                    {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-xs text-emerald-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
-                    <input type="file" name="uniScholarshipFile" accept=".pdf" disabled={isStudent || isFac} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
+                   <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                   {/* ลิงก์ดูไฟล์เดิม */}
+                  {student.uniScholarshipFileName && (
+                      <a href={student.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
+                        <Download size={14}/> View Current Document
+                      </a>
+                  )}
+                  <input type="file" name="uniScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
-                   <input type="number" name="uniScholarshipAmount" defaultValue={student.uniScholarshipAmount} disabled={isStudent || isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
+                   <input type="number" name="uniScholarshipAmount" defaultValue={student.uniScholarshipAmount} min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
                  </div>
               </div>
             </div>
+
+            {/* 4.3 Visa */}
+            <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
+              <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
+                <FileText size={16} className="text-blue-600"/> 3. Visa Application Document
+              </h5>
+              <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                  {/* ลิงก์ดูไฟล์เดิม */}
+                  {student.visaFileName && (
+                      <a href={student.visaFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 mb-3 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 inline-flex items-center gap-1.5 px-3 py-1.5 rounded transition-colors">
+                        <Download size={14}/> View Current Document
+                      </a>
+                  )}
+                 <input type="file" name="visaFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" />
+              </div>
+            </div>
+
           </div>
         </div>
-        )}
 
-        {/* 🚀 NEW: Project Submission System (Visible only on Success) */}
-        {isCompleteProgress && (
-          <div className="bg-purple-50 p-6 rounded-lg border border-purple-200 shadow-sm mt-8">
-            <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2"><Star size={20} className="fill-purple-500 text-purple-500"/> Project Submission & Evaluation</h4>
-            
-            {/* Student Project Input */}
-            <div className="space-y-4 mb-8 bg-white p-5 rounded border border-purple-100">
-              <div><label className="block text-sm font-bold mb-1">Project Name</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="Enter Project Title" /></div>
-              <div><label className="block text-sm font-bold mb-1">Project Description</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border rounded-md" placeholder="Briefly describe the project..." /></div>
-              <div><label className="block text-sm font-bold mb-1">Website URL (Optional)</label><input type="url" name="projectWebsite" defaultValue={student.projectWebsite} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="https://..." /></div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block text-sm font-bold mb-2 text-purple-700">Presentation File (PDF/PPT)</label>
-                  {student.projectPdfFileName && <a href={student.projectPdfFileName} target="_blank" className="text-xs text-purple-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View File</a>}
-                  <input type="file" name="projectPdfFile" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold mb-2 text-purple-700">Full Report Book (PDF)</label>
-                  {student.projectReportFileName && <a href={student.projectReportFileName} target="_blank" className="text-xs text-purple-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Report</a>}
-                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
-                </div>
-              </div>
-            </div>
-
-            {/* Evaluation Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Faculty Evaluation */}
-              <div className="bg-blue-50/50 p-4 rounded border border-blue-100">
-                <h5 className="font-bold text-blue-800 mb-3 flex items-center gap-1"><MessageSquare size={16}/> Faculty Evaluation</h5>
-                <div className="mb-3"><label className="block text-xs font-semibold mb-1 text-slate-500">SCORE</label>
-                  <StarRating rating={facScore} setRating={setFacScore} readOnly={isStudent || isUni} />
-                </div>
-                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="facComment" defaultValue={student.facComment} disabled={isStudent || isUni} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="Faculty advisor comments..." /></div>
-              </div>
-
-              {/* Uni Evaluation */}
-              <div className="bg-emerald-50/50 p-4 rounded border border-emerald-100">
-                <h5 className="font-bold text-emerald-800 mb-3 flex items-center gap-1"><MessageSquare size={16}/> University Evaluation</h5>
-                <div className="mb-3"><label className="block text-xs font-semibold mb-1 text-slate-500">SCORE</label>
-                  <StarRating rating={uniScore} setRating={setUniScore} readOnly={isStudent || isFac} />
-                </div>
-                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="uniComment" defaultValue={student.uniComment} disabled={isStudent || isFac} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="University advisor comments..." /></div>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        <div className="flex justify-end pt-4">
-          <button type="button" onClick={onCancel} className="bg-slate-200 px-6 py-2 rounded-lg font-medium">Cancel</button>
-          <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-            <Save size={20} /> {isSubmitting ? 'Uploading...' : 'Save and Submit'}
+        <div className="flex justify-end pt-4 gap-3">
+          <button type="button" onClick={onCancel} className="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 px-8 py-3 rounded-lg font-medium transition-colors">
+            Cancel
+          </button>
+          <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}>
+            <Save size={20} /> {isSubmitting ? 'Updating...' : 'Update Record'}
           </button>
         </div>
       </form>
-    </div>
-  );
-}
-
-function ApprovalView({ students, onUpdateStatus }) {
-  const [filter, setFilter] = useState('ALL');
-
-  // กรองตามการจัดกลุ่มสถานะ
-  const filteredStudents = students.filter(s => {
-    if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
-    if (filter === 'ALL') return true;
-    if (filter === 'ACTIVE') return ![STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI, STATUSES.HOLD_FAC, STATUSES.HOLD_UNI ].includes(s.status);
-    if (filter === 'HOLD') return [STATUSES.HOLD_FAC, STATUSES.HOLD_UNI, STATUSES.HOLD_VISA].includes(s.status);
-    if (filter === 'RESOLVED') return [STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI ].includes(s.status);
-    return true;
-  });
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full max-w-6xl mx-auto">
-      <div className="p-4 md:p-6 border-b border-slate-200 flex flex-wrap gap-4 justify-between items-center bg-slate-50">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-          <CheckSquare className="text-blue-600" /> Approval Queue
-        </h3>
-        <div className="flex gap-2 w-full md:w-auto">
-          <button onClick={() => setFilter('ALL')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>All</button>
-          <button onClick={() => setFilter('ACTIVE')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'ACTIVE' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>Active</button>
-          <button onClick={() => setFilter('HOLD')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'HOLD' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>On Hold</button>
-          <button onClick={() => setFilter('RESOLVED')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'RESOLVED' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>Resolved</button>
-        </div>
-      </div>
-      
-      <div className="overflow-y-auto flex-1 p-4 md:p-6">
-        <div className="grid gap-4">
-          {filteredStudents.map(student =>{
-            const isCompleted = student.status === STATUSES.COMPLETE;
-            const availableActions = (ACTION_MAP[student.status] || []).filter(action => action.role.includes(currentUser.role));
-          return(
-            <div key={student.id} className={`border rounded-lg p-5 flex flex-col lg:flex-row gap-6 justify-between ${student.status === STATUSES.COMPLETE ? 'border-purple-300 bg-purple-50/20' : 'border-slate-200 bg-white'}`}>
-              <div className="flex-1 w-full">
-                <div className="flex flex-wrap items-center gap-3 mb-3">
-                  <h4 className="text-lg font-bold text-slate-800">{student.prefix} {student.firstName} {student.lastName}</h4>
-                  <Badge status={student.status} />
-                </div>
-                <div className="text-sm text-slate-600 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                  <p className="flex gap-2"><Building className="text-slate-400 shrink-0" size={16}/> <span className="truncate"><strong>Organization:</strong> {student.company} ({student.country})</span></p>
-                  <p><strong>Position:</strong> {student.position}</p>
-                  <p><strong>Academic Record:</strong> GPAX {student.gpax} | {student.engTest}</p>
-                  <p><strong>Duration:</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>
-                  <p><strong>Faculty Fund:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName} target="_blank" className="text-blue-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
-                  <p><strong>Uni Fund:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-emerald-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
-                </div>
-                 {/* Project Sneak Peek */}
-                {student.status === STATUSES.COMPLETE && student.projectName && (
-                  <div className="mt-3 p-3 bg-purple-100/50 rounded border border-purple-200 text-sm">
-                    <strong>Project:</strong> {student.projectName} 
-                    <span className="ml-3 font-bold text-yellow-600">★ Fac: {student.facScore||0} | Uni: {student.uniScore||0}</span>
-                  </div>
-                )}
-              </div>
-              
-              {student.facultyScholarshipFileName && (
-                <a 
-                  href={student.facultyScholarshipFileName} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
-                >
-                  <Download size={14}/> View Document
-                </a>
-              )}
-              {/* Action Buttons based on Workflow */}
-              <div className="flex flex-col gap-2 w-full lg:w-48 lg:shrink-0">
-                
-                {availableActions.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                  {availableActions.map(action => (
-                    <button key={action.label} onClick={() => onUpdateStatus(student.id, action.next)} className={`px-3 py-2 rounded text-xs font-bold shadow-sm ${action.color}`}>
-                      {action.label}
-                    </button>
-                  ))}
-                  </div>
-                )}
-
-                {/* ปุ่มย้อนกลับไป Submitted เพื่อให้นักศึกษาแก้ (แสดงเสมอถ้าไม่ใช่ Submitted) */}
-                {student.status !== STATUSES.SUBMITTED && (
-                    <button 
-                      onClick={() => onUpdateStatus(student.id, STATUSES.SUBMITTED)} 
-                      className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-center gap-1 mt-1"
-                    >
-                      <ArrowLeftCircle size={14}/> Revert to Submitted
-                    </button>
-                )}
-                {/* กล่องข้อความเมื่อสำเร็จแล้ว */}
-                {isCompleted && (
-                  <div className="text-center text-emerald-700 bg-emerald-50 border border-emerald-200 p-3 rounded-md font-medium text-sm mt-2">
-                    <CheckCircle2 size={24} className="mx-auto mb-1" />
-                    All Steps Completed
-                  </div>
-                )}
-            
-                {filteredStudents.length === 0 && (
-                  <div className="text-center py-16 text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-300">
-                    <CheckSquare size={48} className="mx-auto text-slate-300 mb-4" />
-                    <p>No records match the selected criteria.</p>
-                  </div>
-                )}
-                {student.facultyScholarshipFileName && (
-                  <a 
-                    href={student.facultyScholarshipFileName} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
-                  >
-                    <Download size={14}/> View Document
-                  </a>
-                )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StudentListView({ students , currentUser, onEdit , onDelete}) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [yearFilter, setYearFilter] = useState('ALL');
-
-  // Derive unique years dynamically for the filter dropdown
-  const availableYears = useMemo(() => {
-    const years = new Set(students.map(s => s.year));
-    return Array.from(years).sort((a, b) => b - a);
-  }, [students]);
-
-  // Apply search and filters
-  const filteredStudents = useMemo(() => {
-    return students.filter(s => {
-      if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
-      if (currentUser.role === 'student' && s.createdBy !== currentUser.username) return false;
-      return true;
-
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
-        s.firstName.toLowerCase().includes(searchLower) ||
-        s.lastName.toLowerCase().includes(searchLower) ||
-        s.company.toLowerCase().includes(searchLower) ||
-        s.country.toLowerCase().includes(searchLower) ||
-        s.position.toLowerCase().includes(searchLower);
-      
-      const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
-      const matchesYear = yearFilter === 'ALL' || s.year.toString() === yearFilter.toString();
-
-      return matchesSearch && matchesStatus && matchesYear;
-    });
-  }, [students, , currentUser, searchTerm, statusFilter, yearFilter ]);
-
-  const handleExportExcel = () => {
-    // 1. เตรียมหัวตาราง
-    const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
-      'Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
-      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)','Edit&Delete'];
-    
-    // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
-    const rows = filteredStudents.map(s => [
-      s.status, 
-      s.prefix, 
-      s.firstName, 
-      s.lastName, 
-      s.gpax, 
-      s.engTest, 
-      `"${s.company}"`, 
-      `"${s.country}"`, 
-      `"${s.position}"`, 
-      s.year, 
-      s.semester, 
-      new Date(s.departureDate).toLocaleDateString('en-US'),
-      new Date(s.startDate).toLocaleDateString('en-US'),
-      new Date(s.endDate).toLocaleDateString('en-US'),
-      new Date(s.returnDate).toLocaleDateString('en-US'),
-      s.facultyScholarshipAmount || '0',
-      s.uniScholarshipAmount || '0'
-    ]);
-
-    // 3. รวมเป็นข้อความ CSV
-    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    
-    // 4. สร้างไฟล์แล้วสั่งดาวน์โหลดอัตโนมัติ (ใส่ BOM \uFEFF เพื่อให้ Excel อ่านภาษาไทย/UTF-8 ได้ถูกต้อง)
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Student_Records_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:overflow-visible">
-      <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-4 print:hidden">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-          <FileSpreadsheet className="text-emerald-600" /> Spreadsheet: Student Records
-        </h3>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">Total {filteredStudents.length} records</span>
-          <button onClick={handleExportExcel} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Printer size={16} /> Export to Export Excel
-          </button>
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Printer size={16} /> Export to PDF
-          </button>
-        </div>
-      </div>
-      
-      {/* Search and Filter Controls */}
-      <div className="p-4 border-b border-slate-200 bg-white flex flex-col lg:flex-row gap-4 print:hidden">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by name, organization, country, position..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
-            <Filter className="text-slate-500" size={16} />
-            <select 
-              value={statusFilter} 
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
-            >
-              <option value="ALL">All Statuses</option>
-              {Object.values(STATUSES).map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
-            <GraduationCap className="text-slate-500" size={16} />
-            <select 
-              value={yearFilter} 
-              onChange={(e) => setYearFilter(e.target.value)}
-              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
-            >
-              <option value="ALL">All Academic Years</option>
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden print:block p-4 mb-4 text-center border-b border-slate-200">
-        <h2 className="text-2xl font-bold text-slate-900">International Cooperative Education Student Report</h2>
-        <p className="text-slate-600 mt-2">Printed on: {new Date().toLocaleDateString('en-US')}</p>
-      </div>
-
-      <div className="overflow-x-auto flex-1 print:overflow-visible">
-        <table className="w-full text-sm text-left whitespace-nowrap print:whitespace-nowrap">
-          <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10 print:static print:shadow-none print:bg-slate-100">
-            <tr>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Prifix</th>
-              <th className="px-4 py-3 font-semibold">First Name</th>
-              <th className="px-4 py-3 font-semibold">Last Name</th>
-              <th className="px-4 py-3 font-semibold">GPAX</th>
-              <th className="px-4 py-3 font-semibold">English Test</th>
-              <th className="px-4 py-3 font-semibold">Organization</th>
-              <th className="px-4 py-3 font-semibold">Country</th>
-              <th className="px-4 py-3 font-semibold">Position</th>
-              <th className="px-4 py-3 font-semibold text-center">Academic Year</th>
-              <th className="px-4 py-3 font-semibold text-center">Semester</th>
-              <th className="px-4 py-3 font-semibold">Departure</th>
-              <th className="px-4 py-3 font-semibold">Start Date</th>
-              <th className="px-4 py-3 font-semibold">End Date</th>
-              <th className="px-4 py-3 font-semibold">Return</th>
-              <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
-              <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
-              {currentUser?.role === 'admin' && (
-                <th className="px-4 py-3 font-semibold text-center print:hidden sticky right-0 bg-slate-100 border-l border-slate-200">Actions</th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredStudents.map((s, i) => (
-              <tr key={s.id} className={`hover:bg-blue-50/50 ${s.status === STATUSES.COMPLETE ? 'bg-purple-50/10' : ''}`}>
-                <td className="px-4 py-3"><Badge status={s.status} /></td>
-                <td className="px-4 py-3 text-slate-600">{s.prefix}</td>
-                <td className="px-4 py-3 font-medium text-slate-900">{s.firstName}</td>
-                <td className="px-4 py-3 font-medium text-slate-900">{s.lastName}</td>
-                <td className="px-4 py-3 text-slate-600">{s.gpax}</td>
-                <td className="px-4 py-3 text-slate-600">{s.engTest}</td>
-                <td className="px-4 py-3 text-slate-700">{s.company}</td>
-                <td className="px-4 py-3 text-slate-700">{s.country}</td>
-                <td className="px-4 py-3 text-slate-700">{s.position}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.year}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.semester}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.departureDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.startDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.endDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
-                <td className="px-4 py-3 font-bold text-yellow-500">{s.status === STATUSES.SUCCESS && (s.facScore || s.uniScore) ? `★ ${(s.facScore||0)+(s.uniScore||0)}` : '-'}</td>
-
-                {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
-                <td className="px-4 py-3 text-center print:hidden">
-                  <div className="flex flex-col gap-1.5 items-center justify-center">
-                    {s.facultyScholarshipFileName && (
-                      <a href={s.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
-                        <Download size={12} /> Faculty
-                      </a>
-                    )}
-                    {s.uniScholarshipFileName && (
-                      <a href={s.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
-                        <Download size={12} /> University
-                      </a>
-                    )}
-                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName && !s.visaFileName) && (
-                      <span className="text-slate-400 text-xs">-</span>
-                    )}
-                  </div>
-                </td>
-
-                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
-                  <div className="flex items-center justify-center gap-2">
-                    
-                    {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
-                    {canEditRecord(currentUser, s) ? (
-                      <button onClick={() => onEdit(s)} title="Edit Record" className="text-orange-500 hover:text-orange-700 hover:bg-orange-50 p-1.5 rounded transition-colors"><Edit size={16} /></button>
-                    ) : (
-                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-200">Locked</span>
-                    )}
-                    {/* Admin เท่านั้นที่ลบได้ */}
-                    {currentUser?.role === 'admin' && (
-                    <button onClick={() => onDelete(s.id)} title="Delete Record" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors"><Trash2 size={16} /></button>
-                    )}
-                  </div>
-                </td>
-                
-              </tr>
-            ))}
-            {filteredStudents.length === 0 && (
-              <tr>
-                <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
-              </tr>
-            )}
-            
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
@@ -1493,79 +1387,375 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   );
 }
 
-function GuideView() {
+
+function ApprovalView({ students, onUpdateStatus }) {
+  const [filter, setFilter] = useState('ALL');
+
+  // กรองตามการจัดกลุ่มสถานะ
+  const filteredStudents = students.filter(s => {
+    if (filter === 'ALL') return true;
+    if (filter === 'ACTIVE') return ![STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI, STATUSES.REJECT_VISA, STATUSES.HOLD_FAC, STATUSES.HOLD_UNI, STATUSES.HOLD_VISA].includes(s.status);
+    if (filter === 'HOLD') return [STATUSES.HOLD_FAC, STATUSES.HOLD_UNI, STATUSES.HOLD_VISA].includes(s.status);
+    if (filter === 'RESOLVED') return [STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI, STATUSES.REJECT_VISA].includes(s.status);
+    return true;
+  });
+
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-6 border-b pb-4">
-        <BookOpen className="text-blue-600 w-8 h-8 flex-shrink-0" />
-        <h2 className="text-xl md:text-2xl font-bold text-slate-800">RMUTT CWIE International Guide</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full max-w-6xl mx-auto">
+      <div className="p-4 md:p-6 border-b border-slate-200 flex flex-wrap gap-4 justify-between items-center bg-slate-50">
+        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+          <CheckSquare className="text-blue-600" /> Approval Queue
+        </h3>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button onClick={() => setFilter('ALL')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>All</button>
+          <button onClick={() => setFilter('ACTIVE')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'ACTIVE' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>Active</button>
+          <button onClick={() => setFilter('HOLD')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'HOLD' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>On Hold</button>
+          <button onClick={() => setFilter('RESOLVED')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'RESOLVED' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>Resolved</button>
+        </div>
       </div>
-
-      <div className="space-y-8 text-slate-700">
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-500" /> 1. User Roles
-          </h3>
-          <ul className="list-disc list-inside space-y-2 ml-4">
-            <li><strong>Coordinator:</strong> Responsible for registering new student records and viewing the master data list.</li>
-            <li><strong>Administrator:</strong> Responsible for progressing, approving, or rejecting student requests, as well as managing user accounts.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <PlusCircle className="w-5 h-5 text-emerald-500" /> 2. Data Entry (Coordinator Only)
-          </h3>
-          <ol className="list-decimal list-inside space-y-2 ml-4">
-            <li>Navigate to the <strong>"New Registration"</strong> menu on the sidebar.</li>
-            <li>Complete all required fields. Incomplete forms will trigger a validation error.</li>
-            <li>Click the <strong>"Save and Submit"</strong> button at the bottom of the form.</li>
-            <li>The initial status of a newly created record is always <Badge status={STATUSES.SUBMITTED} />.</li>
-          </ol>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <CheckSquare className="w-5 h-5 text-orange-500" /> 3. Approval Workflow (Administrator Only)
-          </h3>
-          <p className="mb-2 ml-4">The approval process consists of two primary stages:</p>
-          <ol className="list-decimal list-inside space-y-3 ml-4">
-            <li>
-              <strong>Acceptance Stage:</strong> Newly submitted requests are marked as "Submitted". The administrator must click <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded border border-blue-200">Accept for In Progress</span> to advance the status.
-            </li>
-            <li>
-              <strong>Decision Stage:</strong> Once In Progress, the administrator can select from three actions:
-              <div className="mt-2 ml-6 flex flex-wrap gap-2">
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded border border-green-200">Approve</span>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded border border-yellow-200">Put on Hold</span>
-                <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded border border-red-200">Reject</span>
+      
+      <div className="overflow-y-auto flex-1 p-4 md:p-6">
+        <div className="grid gap-4">
+          {filteredStudents.map(student =>{
+            const isCompleted = student.status === STATUSES.COMPLETE;
+            const availableActions = ACTION_MAP[student.status] || [];
+          
+          return(
+            <div key={student.id} className="border border-slate-200 rounded-lg p-5 flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between hover:shadow-md transition-shadow bg-white">
+              <div className="flex-1 w-full">
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  <h4 className="text-lg font-bold text-slate-800">{student.prefix} {student.firstName} {student.lastName}</h4>
+                  <Badge status={student.status} />
+                </div>
+                <div className="text-sm text-slate-600 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                  <p className="flex gap-2"><Building className="text-slate-400 shrink-0" size={16}/> <span className="truncate"><strong>Organization:</strong> {student.company} ({student.country})</span></p>
+                  <p><strong>Position:</strong> {student.position}</p>
+                  <p><strong>Academic Record:</strong> GPAX {student.gpax} | {student.engTest}</p>
+                  <p><strong>Duration:</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>
+                  <p><strong>Faculty Fund:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && `(Attached)`}</p>
+                  <p><strong>Uni Fund:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && `(Attached)`}</p>
+                  <p><strong>Visa Doc:</strong> {student.visaFileName ? 'Attached' : 'Pending'}</p>
+                </div>
               </div>
-            </li>
-            <li>Administrators may revert a processed decision by clicking <strong>"Revert to In Progress"</strong>.</li>
-          </ol>
-        </section>
+              
+              {student.facultyScholarshipFileName && (
+                <a 
+                  href={student.facultyScholarshipFileName} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
+                >
+                  <Download size={14}/> View Document
+                </a>
+              )}
+              {/* Action Buttons based on Workflow */}
+              <div className="flex flex-col gap-2 w-full lg:w-48 lg:shrink-0">
+                
+                {availableActions.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                        {availableActions.map(action => (
+                          <button 
+                          key={action.label}
+                          onClick={() => onUpdateStatus(student.id, action.next)} 
+                          className={`flex-1 px-3 py-2 rounded-md font-medium text-xs transition-colors shadow-sm ${action.color}`}
+                          >
+                              {action.label}
+                           </button>
+                        ))}
+                     </div>
+                )}
 
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <UserCog className="w-5 h-5 text-purple-500" /> 4. User Account Management (Administrator Only)
-          </h3>
-          <p className="ml-4">
-            Administrators are authorized to create new accounts for both Coordinator and Administrators via the "User Management" tab. Furthermore, they can revoke existing Coordinator accounts (Revocation of other Administrators is strictly prohibited).
-          </p>
-        </section>
-        
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-indigo-500" /> 5. Viewing All Records
-          </h3>
-          <p className="ml-4">
-            All authorized personnel can access the <strong>"Spreadsheet"</strong> to view comprehensive student data in a spreadsheet format, facilitating efficient auditing and data export.
-          </p>
-        </section>
+                {/* ปุ่มย้อนกลับไป Submitted เพื่อให้นักศึกษาแก้ (แสดงเสมอถ้าไม่ใช่ Submitted) */}
+                {student.status !== STATUSES.SUBMITTED && (
+                    <button 
+                      onClick={() => onUpdateStatus(student.id, STATUSES.SUBMITTED)} 
+                      className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-center gap-1 mt-1"
+                    >
+                      <ArrowLeftCircle size={14}/> Revert to Submitted
+                    </button>
+                )}
+                {/* กล่องข้อความเมื่อสำเร็จแล้ว */}
+                {isCompleted && (
+                  <div className="text-center text-emerald-700 bg-emerald-50 border border-emerald-200 p-3 rounded-md font-medium text-sm mt-2">
+                    <CheckCircle2 size={24} className="mx-auto mb-1" />
+                    All Steps Completed
+                  </div>
+                )}
+            
+                {filteredStudents.length === 0 && (
+                  <div className="text-center py-16 text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-300">
+                    <CheckSquare size={48} className="mx-auto text-slate-300 mb-4" />
+                    <p>No records match the selected criteria.</p>
+                  </div>
+                )}
+                {student.facultyScholarshipFileName && (
+                  <a 
+                    href={student.facultyScholarshipFileName} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
+                  >
+                    <Download size={14}/> View Document
+                  </a>
+                )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
+
+function StudentListView({ students , currentUser, onEdit , onDelete}) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [yearFilter, setYearFilter] = useState('ALL');
+
+  // Derive unique years dynamically for the filter dropdown
+  const availableYears = useMemo(() => {
+    const years = new Set(students.map(s => s.year));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [students]);
+
+  // Apply search and filters
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        s.firstName.toLowerCase().includes(searchLower) ||
+        s.lastName.toLowerCase().includes(searchLower) ||
+        s.company.toLowerCase().includes(searchLower) ||
+        s.country.toLowerCase().includes(searchLower) ||
+        s.position.toLowerCase().includes(searchLower);
+      
+      const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+      const matchesYear = yearFilter === 'ALL' || s.year.toString() === yearFilter.toString();
+
+      return matchesSearch && matchesStatus && matchesYear;
+    });
+  }, [students, searchTerm, statusFilter, yearFilter]);
+
+  const handleExportExcel = () => {
+    // 1. เตรียมหัวตาราง
+    const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
+      'Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
+      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)'];
+    
+    // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
+    const rows = filteredStudents.map(s => [
+      s.status, 
+      s.prefix, 
+      s.firstName, 
+      s.lastName, 
+      s.gpax, 
+      s.engTest, 
+      `"${s.company}"`, 
+      `"${s.country}"`, 
+      `"${s.position}"`, 
+      s.year, 
+      s.semester, 
+      new Date(s.departureDate).toLocaleDateString('en-US'),
+      new Date(s.startDate).toLocaleDateString('en-US'),
+      new Date(s.endDate).toLocaleDateString('en-US'),
+      new Date(s.returnDate).toLocaleDateString('en-US'),
+      s.facultyScholarshipAmount || '0',
+      s.uniScholarshipAmount || '0'
+    ]);
+
+    // 3. รวมเป็นข้อความ CSV
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    
+    // 4. สร้างไฟล์แล้วสั่งดาวน์โหลดอัตโนมัติ (ใส่ BOM \uFEFF เพื่อให้ Excel อ่านภาษาไทย/UTF-8 ได้ถูกต้อง)
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Student_Records_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:overflow-visible">
+      <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-4 print:hidden">
+        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+          <FileSpreadsheet className="text-emerald-600" /> Spreadsheet: Student Records
+        </h3>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">Total {filteredStudents.length} records</span>
+          <button onClick={handleExportExcel} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Printer size={16} /> Export to Export Excel
+          </button>
+          <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Printer size={16} /> Export to PDF
+          </button>
+        </div>
+      </div>
+      
+      {/* Search and Filter Controls */}
+      <div className="p-4 border-b border-slate-200 bg-white flex flex-col lg:flex-row gap-4 print:hidden">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search by name, organization, country, position..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
+          />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+            <Filter className="text-slate-500" size={16} />
+            <select 
+              value={statusFilter} 
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="ALL">All Statuses</option>
+              {Object.values(STATUSES).map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+            <GraduationCap className="text-slate-500" size={16} />
+            <select 
+              value={yearFilter} 
+              onChange={(e) => setYearFilter(e.target.value)}
+              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="ALL">All Academic Years</option>
+              {availableYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden print:block p-4 mb-4 text-center border-b border-slate-200">
+        <h2 className="text-2xl font-bold text-slate-900">International Cooperative Education Student Report</h2>
+        <p className="text-slate-600 mt-2">Printed on: {new Date().toLocaleDateString('en-US')}</p>
+      </div>
+
+      <div className="overflow-x-auto flex-1 print:overflow-visible">
+        <table className="w-full text-sm text-left whitespace-nowrap print:whitespace-nowrap">
+          <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10 print:static print:shadow-none print:bg-slate-100">
+            <tr>
+              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">Title</th>
+              <th className="px-4 py-3 font-semibold">First Name</th>
+              <th className="px-4 py-3 font-semibold">Last Name</th>
+              <th className="px-4 py-3 font-semibold">GPAX</th>
+              <th className="px-4 py-3 font-semibold">English Test</th>
+              <th className="px-4 py-3 font-semibold">Organization</th>
+              <th className="px-4 py-3 font-semibold">Country</th>
+              <th className="px-4 py-3 font-semibold">Position</th>
+              <th className="px-4 py-3 font-semibold text-center">Academic Year</th>
+              <th className="px-4 py-3 font-semibold text-center">Semester</th>
+              <th className="px-4 py-3 font-semibold">Departure</th>
+              <th className="px-4 py-3 font-semibold">Start Date</th>
+              <th className="px-4 py-3 font-semibold">End Date</th>
+              <th className="px-4 py-3 font-semibold">Return</th>
+              <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
+              <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
+              {currentUser?.role === 'admin' && (
+                <th className="px-4 py-3 font-semibold text-center print:hidden sticky right-0 bg-slate-100 border-l border-slate-200">Actions</th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredStudents.map((s, i) => (
+              <tr key={s.id} className="hover:bg-blue-50/50 transition-colors">
+                <td className="px-4 py-3"><Badge status={s.status} /></td>
+                <td className="px-4 py-3 text-slate-600">{s.prefix}</td>
+                <td className="px-4 py-3 font-medium text-slate-900">{s.firstName}</td>
+                <td className="px-4 py-3 font-medium text-slate-900">{s.lastName}</td>
+                <td className="px-4 py-3 text-slate-600">{s.gpax}</td>
+                <td className="px-4 py-3 text-slate-600">{s.engTest}</td>
+                <td className="px-4 py-3 text-slate-700">{s.company}</td>
+                <td className="px-4 py-3 text-slate-700">{s.country}</td>
+                <td className="px-4 py-3 text-slate-700">{s.position}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.year}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.semester}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.departureDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.startDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.endDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
+
+                {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
+                <td className="px-4 py-3 text-center print:hidden">
+                  <div className="flex flex-col gap-1.5 items-center justify-center">
+                    {s.facultyScholarshipFileName && (
+                      <a href={s.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
+                        <Download size={12} /> Faculty
+                      </a>
+                    )}
+                    {s.uniScholarshipFileName && (
+                      <a href={s.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
+                        <Download size={12} /> University
+                      </a>
+                    )}
+                    {s.visaFileName && (
+                      <a href={s.visaFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-orange-600 hover:text-orange-800 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-orange-200">
+                        <Download size={12} /> Visa
+                      </a>
+                    )}
+                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName && !s.visaFileName) && (
+                      <span className="text-slate-400 text-xs">-</span>
+                    )}
+                  </div>
+                </td>
+
+                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
+                  <div className="flex items-center justify-center gap-2">
+                    
+                    {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
+                    {canEditRecord(currentUser, s) ? (
+                      <button 
+                        onClick={() => onEdit(s)}
+                        title="Edit Record"
+                        className="text-orange-500 hover:text-orange-700 hover:bg-orange-50 p-1.5 rounded transition-colors"
+                      >
+                        <Edit size={16} />
+                      </button>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-200">Locked</span>
+                    )}
+                    {/* Admin เท่านั้นที่ลบได้ */}
+                    {currentUser?.role === 'admin' && (
+                    <button 
+                      onClick={() => onDelete(s.id)}
+                      title="Delete Record"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    )}
+                  </div>
+                </td>
+                
+              </tr>
+            ))}
+            {filteredStudents.length === 0 && (
+              <tr>
+                <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
+              </tr>
+            )}
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 
 function LoginScreen({ onLogin }) {
   const [error, setError] = useState('');
