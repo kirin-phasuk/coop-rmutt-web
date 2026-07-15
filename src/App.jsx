@@ -217,7 +217,7 @@ export default function App() {
     const savedUserId = getCookie('auth_user_id');
     if (savedUserId && users[savedUserId]) setCurrentUser(users[savedUserId]); 
   }, [users]); 
-  
+
 // Login Handler
   const handleLogin = (username, password) => {
     if (users[username] && users[username].password === password) {
@@ -469,7 +469,7 @@ function DashboardView({ students }) {
         <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} color="bg-green-500" />
         <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<CheckCircle2 />} color="bg-orange-500" />
         <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="Complete" value={stats.complete} icon={<XCircle />} color="bg-red-500" />
+        <StatCard title="Complete" value={stats.complete} icon={<XCircle />} color="bg-green-500" />
       </div>
 
       {/* Map & Region Details */}
@@ -1440,7 +1440,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
             <select name="role" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
-              <option value="coordinator">Coordinator</option>
+              <option value="coordinator">FacultyCoordinator</option>
+              <option value="coordinator">UniversityCoordinator</option>
               <option value="student">Student</option>
             </select>
           </div>
