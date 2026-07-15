@@ -219,6 +219,14 @@ export default function App() {
   }, [users]); 
 
   // Login Handler
+  if (users[username] && users[username].password === password) {
+      setCurrentUser(users[username]);
+      setCookie('auth_user_id', username, 7); 
+      setActiveTab('dashboard');
+      return true; 
+    } else {
+      return false; 
+  }
 
   const handleLogout = () => {
     setCurrentUser(null);
