@@ -1345,6 +1345,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  // 👉 เพิ่ม State สำหรับควบคุม Dropdown Role ว่าตอนนี้เลือกอะไรอยู่
+  const [selectedRole, setSelectedRole] = useState('admin');
 
   const handleSaveUser = (e) => {
     e.preventDefault();
@@ -1352,25 +1354,19 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const password = e.target.password.value;
     const name = e.target.name.value;
     const role = e.target.role.value;
-    const faculty = e.target.faculty.value;
+    const faculty = e.target.faculty.value ? e.target.faculty.value : '';
 
-    if (!username || !password || !name || !role || !faculty) {
+    if (!username || !password || !name || !role) {
       setError('Please complete all required fields.');
       setSuccess('');
       return;
     }
-
-    if (users[username]) {
-      setError('This username already exists in the system.');
+    if (role === 'facultyCoordinator','student' && !faculty) {
+      setError('Please select a faculty.');
       setSuccess('');
       return;
     }
-
-    setUsers({
-      ...users,
-      [username]: { username, password, name, role, faculty}
-    });
-
+    const finalFaculty = (role === 'facultyCoordinator','student') ? faculty : '';
     const newUsers = { ...users };
 
     if (editingUser) {
@@ -1387,7 +1383,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       }
       
       // อัปเดตข้อมูลลงไป
-      newUsers[username] = { username, password, name, role, faculty};
+      newUsers[username] = { username, password, name, role, faculty: finalFaculty};
       setSuccess(`Account '${username}' has been successfully updated.`);
     } else {
       // โหมดสร้างใหม่ (ADD)
@@ -1396,7 +1392,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
         setSuccess('');
         return;
       }
-      newUsers[username] = { username, password, name, role, faculty };
+      newUsers[username] = { username, password, name, role, faculty: finalFaculty };
       setSuccess(`Account successfully created for ${role}.`);
     }
 
@@ -1429,10 +1425,16 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   // Click Edit Button
   const handleEditClick = (user) => {
     setEditingUser(user);
+    setSelectedRole(user.role);
     setError('');
     setSuccess('');
     setRevokeSuccess('');
     window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนจอกลับขึ้นไปที่ฟอร์ม
+  };
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    setSelectedRole('admin');
+    setError('');
   };
 
   return (
@@ -1490,13 +1492,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
-            <select name="role" id="roleSelect" defaultValue={editingUser?.role || 'admin'} onChange={(e) => {
-                const facSelect = document.getElementById('facSelect');
-                if(e.target.value === 'facultyCoordinator') facSelect.removeAttribute('disabled');
-                else { facSelect.setAttribute('disabled', 'true'); facSelect.value = ''; }
-              }} 
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
+            <select name="role" id="roleSelect" defaultValue={editingUser?.role || 'admin'}
+              onChange={(e) => setSelectedRole(e.target.value)} // 👉 3. อัปเดต State เมื่อเปลี่ยน Role
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
               <option value="facultyCoordinator">Faculty Coordinator</option>
               <option value="universityCoordinator">University Coordinator</option>
