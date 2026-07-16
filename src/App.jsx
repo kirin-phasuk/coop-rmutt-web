@@ -1518,7 +1518,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                 <th className="px-6 py-3">Username</th>
                 <th className="px-6 py-3">Role</th>
                 <th className="px-6 py-3">Faculty</th>
-                <th className="px-6 py-3">Actions</th>
+                <th className="px-6 py-3 inline-flex items-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1549,7 +1549,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                         <Trash2 size={16} /> Revoke
                       </button>
                     ):(
-                      <span className="text-slate-400 text-xs px-2 py-1.5 inline-flex items-center">- Current User -</span>
+                      <span className="text-slate-400 text-xs px-3 py-1.5 rounded-md inline-flex items-center gap-1">- Current User -</span>
                     )}
                   </td>
                 </tr>
