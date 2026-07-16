@@ -1351,8 +1351,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const password = e.target.password.value;
     const name = e.target.name.value;
     const role = e.target.role.value;
+    const faculty = e.target.role.value;
 
-    if (!username || !password || !name || !role) {
+    if (!username || !password || !name || !role || !faculty) {
       setError('Please complete all required fields.');
       setSuccess('');
       return;
@@ -1366,7 +1367,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
 
     setUsers({
       ...users,
-      [username]: { username, password, name, role }
+      [username]: { username, password, name, role, faculty}
     });
     
     setSuccess(`Account successfully created for ${role}.`);
