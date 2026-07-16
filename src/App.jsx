@@ -1439,8 +1439,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
             <select name="role" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
-              <option value="coordinator">FacultyCoordinator</option>
-              <option value="coordinator">UniversityCoordinator</option>
+              <option value="facultyCoordinator">FacultyCoordinator</option>
+              <option value="universityCoordinator">UniversityCoordinator</option>
               <option value="student">Student</option>
             </select>
           </div>
