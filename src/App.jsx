@@ -1379,7 +1379,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       newUsers[username] = { username, password, name, role, faculty};
       setSuccess(`Account '${username}' has been successfully updated.`);
 
-    } else {
+    } else if(!editingUser){
       // โหมดสร้างใหม่ (ADD)
       if (users[username]) {
         setError('This username already exists in the system.');
@@ -1481,8 +1481,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
-            <select name="role" defaultValue={editingUser?.role || 'admin'} 
-              onChange={(e) => {setEditingUser(e.target.value)}}
+            <select name="role" defaultValue={!editingUser?.role || 'admin'} 
+              onChange={(e) => {setUsers(e.target.value)}}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
               <option value="facultyCoordinator">FacultyCoordinator</option>
