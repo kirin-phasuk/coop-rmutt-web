@@ -1345,7 +1345,6 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
-  const [selectedRole, setSelectedRole] = useState('admin');
 
   const handleSaveUser = (e) => {
     e.preventDefault();
@@ -1353,52 +1352,49 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const password = e.target.password.value;
     const name = e.target.name.value;
     const role = e.target.role.value;
-    const faculty = e.target.faculty.value ? e.target.faculty.value : '';
+    const faculty = e.target.faculty.value;
 
-    if (!username || !password || !name || !role) {
+    if (!username || !password || !name || !role || !faculty) {
       setError('Please complete all required fields.');
       setSuccess('');
       return;
     }
-    const needsFaculty = ['facultyCoordinator', 'student'].includes(role);
 
-    if (needsFaculty && !faculty) {
-      setError(`Please select a faculty for ${role}.`);
-      setSuccess('');
-      return;
-    }
     const newUsers = { ...users }; // ก๊อปปี้ข้อมูลทั้งหมดออกมาก่อน
-    const finalFaculty = needsFaculty ? faculty : '';
 
-    //Edit User
     if (editingUser) {
+      // โหมดแก้ไข (EDIT)
       if (editingUser.username !== username) {
+        // ถ้ามีการ "เปลี่ยน Username" ต้องเช็คก่อนว่า Username ใหม่ซ้ำกับคนอื่นในระบบไหม
         if (newUsers[username]) {
           setError('This new username already exists in the system.');
           setSuccess('');
           return;
         }
+        // ลบ Key ชื่อเก่าทิ้ง เพื่อเตรียมใช้ชื่อใหม่
         delete newUsers[editingUser.username];
       }
       
       // อัปเดตข้อมูลลงไป
-      newUsers[username] = { username, password, name, role, faculty: finalFaculty};
+      newUsers[username] = { username, password, name, role, faculty};
       setSuccess(`Account '${username}' has been successfully updated.`);
-    } 
-    //Add newUser
-    else {
+
+    } else {
+      // โหมดสร้างใหม่ (ADD)
       if (users[username]) {
         setError('This username already exists in the system.');
         setSuccess('');
         return;
       }
-      newUsers[username] = { username, password, name, role, faculty: finalFaculty };
+      newUsers[username] = { username, password, name, role, faculty };
       setSuccess(`Account successfully created for ${role}.`);
     }
 
-    setUsers(newUsers);
+    setUsers({
+      ...users,
+      [username]: { username, password, name, role, faculty}
+    });
     setEditingUser(null);
-    setSelectedRole('admin');
     setError('');
     setRevokeSuccess('');
     e.target.reset();
@@ -1425,17 +1421,10 @@ function UserManagementView({ users, setUsers ,currentUser}) {
 
   const handleEditClick = (user) => {
     setEditingUser(user);
-    setSelectedRole(user.role);
     setError('');
     setSuccess('');
     setRevokeSuccess('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingUser(null);
-    setSelectedRole('admin');
-    setError('');
   };
 
   return (
@@ -1449,7 +1438,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           {/* ปุ่ม Cancel จะโผล่มาเฉพาะตอนแก้ไข */}
           {editingUser && (
-            <button onClick={handleCancelEdit} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors">
+            <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors">
               <X size={20} />
             </button>
           )}
@@ -1476,7 +1465,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
         )}
 
-        {/* 👉 ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
+        {/* 👉 3. ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
         <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
@@ -1501,7 +1490,6 @@ function UserManagementView({ users, setUsers ,currentUser}) {
               <option value="student">Student</option>
             </select>
           </div>
-          {['facultyCoordinator', 'student'].includes(selectedRole) && (
           <div>
             <label className="block text-sm font-medium mb-1">Faculty</label>
             <select name="faculty" defaultValue={editingUser?.faculty || ''} className="w-full px-3 py-2 border rounded-md bg-white" >
@@ -1509,13 +1497,13 @@ function UserManagementView({ users, setUsers ,currentUser}) {
               {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
-          )}
+
           <button type="submit" className={`font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px] text-white ${editingUser ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
             {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
           </button>
         </form>
       </div>
-      
+
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
           <h3 className="font-semibold text-slate-800 flex items-center gap-2">
