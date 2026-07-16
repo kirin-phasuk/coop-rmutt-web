@@ -1489,6 +1489,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                       <span className="capitalize">{user.role}</span>
                     </span>
                   </td>
+                  <td  className="px-6 py-4">{user.faculty}</td>
                   <td className="px-6 py-4 text-right">
                     {user.name !== currentUser.name ?(
                       <button 
