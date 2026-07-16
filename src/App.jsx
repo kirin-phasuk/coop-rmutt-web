@@ -1346,7 +1346,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [revokeSuccess, setRevokeSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
 
-  const handleAddUser = (e) => {
+  const handleSaveUser = (e) => {
     e.preventDefault();
     const username = e.target.username.value;
     const password = e.target.password.value;
@@ -1370,28 +1370,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       ...users,
       [username]: { username, password, name, role, faculty}
     });
-    
-    setSuccess(`Account successfully created for ${role}.`);
-    setError('');
-    setRevokeSuccess('');
-    e.target.reset();
-    setTimeout(() => setSuccess(''), 3000);
-  };
-  const handleEditUser = (e) => {
-    e.preventDefault();
-    const username = e.target.username.value;
-    const password = e.target.password.value;
-    const name = e.target.name.value;
-    const role = e.target.role.value;
-    const faculty = e.target.faculty.value;
 
-    // เช็คค่าว่าง
-    if (!username || !password || !name || !role|| !faculty) {
-      setError('Please complete all required fields.');
-      setSuccess('');
-      return;
-    }
-    const newUsers = { ...users }; // ก๊อปปี้ข้อมูลทั้งหมดออกมาก่อน
+    const newUsers = { ...users };
+
     if (editingUser) {
       // โหมดแก้ไข (EDIT)
       if (editingUser.username !== username) {
@@ -1404,9 +1385,21 @@ function UserManagementView({ users, setUsers ,currentUser}) {
         // ลบ Key ชื่อเก่าทิ้ง เพื่อเตรียมใช้ชื่อใหม่
         delete newUsers[editingUser.username];
       }
+      
+      // อัปเดตข้อมูลลงไป
       newUsers[username] = { username, password, name, role, faculty};
       setSuccess(`Account '${username}' has been successfully updated.`);
+    } else {
+      // โหมดสร้างใหม่ (ADD)
+      if (newUsers[username]) {
+        setError('This username already exists in the system.');
+        setSuccess('');
+        return;
+      }
+      newUsers[username] = { username, password, name, role, faculty };
+      setSuccess(`Account successfully created for ${role}.`);
     }
+
     // บันทึกลง State และเคลียร์หน้าจอ
     setUsers(newUsers);
     setEditingUser(null); // ออกจากโหมดแก้ไข
@@ -1414,7 +1407,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     setRevokeSuccess('');
     e.target.reset();
     setTimeout(() => setSuccess(''), 3000);
-  }
+  };
 
   const handleRemoveUser = (usernameToRemove) => {
     if (usernameToRemove === currentUser.username) {
@@ -1482,7 +1475,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
         )}
 
         {/* 👉 3. ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
-        <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleEditUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
             <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -1578,7 +1571,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {Object.values(users).map(user => (
-                <tr key={user.username} className="hover:bg-slate-50 transition-colors">
+                <tr key={user.username} className={`transition-colors ${editingUser?.username === user.username ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
                   <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
                   <td className="px-6 py-4">{user.username}</td>
                   <td className="px-6 py-4">
