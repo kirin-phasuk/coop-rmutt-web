@@ -15,6 +15,10 @@ const FACULTIES = [
   "Faculty of Liberal Arts", "Faculty of Nursing", "Faculty of Integrative Medicine"
 ];
 
+const role = [
+  "admin","facultyCoordinator","universityCoordinator","student"
+];
+
 // --- Mock Data & Constants ---
 const USERS = {
   admin: { username: 'admin', password: '12345', role: 'admin', name: 'Administrator' },
@@ -1481,13 +1485,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
-            <select name="role" defaultValue={!editingUser?.role || 'admin'} 
-              onChange={(e) => {setUsers(e.target.value)}}
+            <select name="role" defaultValue={editingUser?.role || 'admin'} 
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="admin">Administrator</option>
-              <option value="facultyCoordinator">FacultyCoordinator</option>
-              <option value="universityCoordinator">UniversityCoordinator</option>
-              <option value="student">Student</option>
+              {role.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
           <div>
