@@ -33,7 +33,9 @@ const STATUSES = {
   REJECT_UNI: 'Rejected - University Scholarship',
   APP_UNI: 'Approve University Scholarship',
   
-  COMPLETE: 'Complete'
+  COMPLETE: 'Complete',
+  PROJ_SUBMITTED: 'Project Submitted',
+  PROJ_FINISHED: 'Project Evaluated' 
 };
 
 const STATUS_COLORS = {
@@ -49,7 +51,9 @@ const STATUS_COLORS = {
   [STATUSES.REJECT_UNI]: 'bg-red-50 text-red-700 border-red-200',
   [STATUSES.APP_UNI]: 'bg-teal-50 text-teal-700 border-teal-200',
   
-  [STATUSES.COMPLETE]: 'bg-slate-800 text-white border-slate-900 shadow-sm'
+  [STATUSES.COMPLETE]: 'bg-slate-800 text-white border-slate-900 shadow-sm',
+  [STATUSES.PROJ_SUBMITTED]: 'bg-purple-600 text-white border-purple-700 shadow-sm animate-pulse',
+  [STATUSES.PROJ_FINISHED]: 'bg-green-600 text-white border-green-700 shadow-sm'
 };
 
 const ACTION_MAP = {
@@ -80,6 +84,8 @@ const ACTION_MAP = {
   [STATUSES.APP_UNI]: [
     { label: 'Complete', next: STATUSES.COMPLETE, color: 'bg-orange-600 hover:bg-orange-700 text-white' , role: ['admin', 'universityCoordinator']}
   ],
+  [STATUSES.COMPLETE]: [], // ซ่อนปุ่ม Action ปกติ เพื่อบังคับให้นักศึกษาไป Submit โปรเจคเองในฟอร์ม
+  [STATUSES.PROJ_SUBMITTED]: [ { label: 'Mark as Evaluated', next: STATUSES.PROJ_FINISHED, color: 'bg-green-600 hover:bg-green-700 text-white', role: ['admin', 'facultyCoordinator', 'universityCoordinator'] } ]
   
 };
 
@@ -198,8 +204,7 @@ export default function App() {
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
   useEffect(() => { localStorage.setItem('mock_users', JSON.stringify(users)); }, [users]);
-
- useEffect(() => {
+  useEffect(() => {
     const fetchStudents = async () => {
       try {
         const response = await fetch('/api/students');
@@ -212,7 +217,6 @@ export default function App() {
     };
     fetchStudents();
   }, []);
-
   useEffect(() => {
     const savedUserId = getCookie('auth_user_id');
     if (savedUserId && users[savedUserId]) setCurrentUser(users[savedUserId]); 
@@ -764,7 +768,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   const isUni = currentUser.role === 'universityCoordinator';
   const isAdmin = currentUser.role === 'admin';
 
-  const isCompleteProgress = student.status === STATUSES.COMPLETE;
+  const isCompleteProgress = [STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -812,6 +816,13 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
+    data.facScore = facScore;
+    data.uniScore = uniScore;
+    // Submit Project ให้บังคับเปลี่ยนสถานะทันที
+    if (submitAction === 'submitProject') {
+      data.status = STATUSES.PROJ_SUBMITTED;
+    }
+
     await onUpdate(student.id, data);
     setIsSubmitting(false);
   };
@@ -972,10 +983,18 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           </div>
         )}
 
-        <div className="flex justify-end pt-4">
-          <button type="button" onClick={onCancel} className="bg-slate-200 px-6 py-2 rounded-lg font-medium">Cancel</button>
-          <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-            <Save size={20} /> {isSubmitting ? 'Uploading...' : 'Save and Submit'}
+        {/* 👉 ปุ่มกด Save ทั้ง 2 แบบ (นักศึกษาและแอดมินใช้ร่วมกัน) */}
+        <div className="flex justify-end pt-4 gap-3">
+          <button type="button" onClick={onCancel} className="bg-slate-200 hover:bg-slate-300 transition-colors px-6 py-2 rounded-lg font-medium text-slate-700">Cancel</button>
+          {/* ปุ่ม Submit Project จะโผล่มาให้นักศึกษากดก็ต่อเมื่อยังไม่ได้ Submit */}
+          {isCompleteProgress && (isStudent || isAdmin) && student.status !== STATUSES.PROJ_FINISHED && (
+            <button type="submit" onClick={() => setSubmitAction('submitProject')} disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm flex items-center gap-2">
+              <Star size={18} /> Save & Submit Project
+            </button>
+          )}
+          {/* ปุ่ม Save ธรรมดา */}
+          <button type="submit" onClick={() => setSubmitAction('update')} disabled={isSubmitting} className={`text-white px-8 py-2 rounded-lg font-medium shadow-sm flex items-center gap-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}>
+            <Save size={18} /> {isSubmitting ? 'Updating...' : 'Update Record'}
           </button>
         </div>
       </form>
@@ -1032,10 +1051,20 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                   <p><strong>Uni Fund:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-emerald-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
                 </div>
                  {/* Project Sneak Peek */}
-                {student.status === STATUSES.COMPLETE && student.projectName && (
-                  <div className="mt-3 p-3 bg-purple-100/50 rounded border border-purple-200 text-sm">
-                    <strong>Project:</strong> {student.projectName} 
-                    <span className="ml-3 font-bold text-yellow-600">★ Fac: {student.facScore||0} | Uni: {student.uniScore||0}</span>
+                {[STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status) && student.projectName && (
+                  <div className="mt-3 p-4 bg-purple-50/50 rounded border border-purple-200 text-sm">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <strong className="text-purple-800">Project: {student.projectName || 'Not submitted yet'}</strong>
+                        <span className="font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-200">★ Fac: {student.facScore||0} | Uni: {student.uniScore||0}</span>
+                      </div>
+                      <p className="text-slate-600 italic">"{student.projectDescription}"</p>
+                      <div className="flex gap-2 flex-wrap mt-1">
+                         {student.projectPdfFileName && <a href={student.projectPdfFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Presentation</a>}
+                         {student.projectReportFileName && <a href={student.projectReportFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Report Book</a>}
+                         {student.projectWebsite && <a href={student.projectWebsite} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Website</a>}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1140,8 +1169,8 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
   const handleExportExcel = () => {
     // 1. เตรียมหัวตาราง
     const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
-      'Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
-      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)'];
+      'Faculty','Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
+      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)', 'Project Score'];
     
     // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
     const rows = filteredStudents.map(s => [
@@ -1151,9 +1180,10 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
       s.lastName, 
       s.gpax, 
       s.engTest, 
-      `"${s.company}"`, 
-      `"${s.country}"`, 
-      `"${s.position}"`, 
+      `"${s.faculty || '-'}"`, 
+      `"${s.company || ''}"`, 
+      `"${s.country || ''}"`, 
+      `"${s.position|| ''}"`, 
       s.year, 
       s.semester, 
       new Date(s.departureDate).toLocaleDateString('en-US'),
@@ -1161,13 +1191,13 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
       new Date(s.endDate).toLocaleDateString('en-US'),
       new Date(s.returnDate).toLocaleDateString('en-US'),
       s.facultyScholarshipAmount || '0',
-      s.uniScholarshipAmount || '0'
+      s.uniScholarshipAmount || '0',
+      (s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (s.facScore || s.uniScore) ? `${(s.facScore||0)+(s.uniScore||0)}` : ''
     ]);
 
-    // 3. รวมเป็นข้อความ CSV
+    // รวมเป็นข้อความ CSV
     const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    
-    // 4. สร้างไฟล์แล้วสั่งดาวน์โหลดอัตโนมัติ (ใส่ BOM \uFEFF เพื่อให้ Excel อ่านภาษาไทย/UTF-8 ได้ถูกต้อง)
+    // สร้างไฟล์แล้วสั่งดาวน์โหลดอัตโนมัติ (ใส่ BOM \uFEFF เพื่อให้ Excel อ่านภาษาไทย/UTF-8 ได้ถูกต้อง)
     const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1263,9 +1293,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
               <th className="px-4 py-3 font-semibold">Return</th>
               <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
               <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
-              {currentUser?.role === 'admin' && (
-                <th className="px-4 py-3 font-semibold text-center print:hidden sticky right-0 bg-slate-100 border-l border-slate-200">Actions</th>
-              )}
+              <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -1288,7 +1316,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
-                <td className="px-4 py-3 font-bold text-yellow-500">{s.status === STATUSES.SUCCESS && (s.facScore || s.uniScore) ? `★ ${(s.facScore||0)+(s.uniScore||0)}` : '-'}</td>
+                <td className="px-4 py-3 font-bold text-yellow-500">{s.status === STATUSES.COMPLETE && (s.facScore || s.uniScore) ? `★ ${(s.facScore||0)+(s.uniScore||0)}` : '-'}</td>
 
                 {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
                 <td className="px-4 py-3 text-center print:hidden">
