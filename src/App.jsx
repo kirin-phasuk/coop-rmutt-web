@@ -1351,7 +1351,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const password = e.target.password.value;
     const name = e.target.name.value;
     const role = e.target.role.value;
-    const faculty = e.target.role.value;
+    const faculty = e.target.faculty.value;
 
     if (!username || !password || !name || !role || !faculty) {
       setError('Please complete all required fields.');
