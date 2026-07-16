@@ -1515,41 +1515,6 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
           </button>
         </form>
-
-        <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-            <input type="text" name="name" placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
-            <input type="text" name="username" placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <input type="password" name="password" placeholder="Create password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
-            <select name="role" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="admin">Administrator</option>
-              <option value="facultyCoordinator">FacultyCoordinator</option>
-              <option value="universityCoordinator">UniversityCoordinator</option>
-              <option value="student">Student</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Faculty</label>
-            <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" >
-              <option value="">Select Faculty...</option>
-              {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-          </div>
-
-          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px]">
-            <UserPlus size={18} /> Add Account
-          </button>
-        </form>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
