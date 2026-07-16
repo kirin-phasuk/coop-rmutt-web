@@ -1344,8 +1344,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
+  const [editingUser, setEditingUser] = useState(null);
 
-  const handleAddUser = (e) => {
+  const handleSaveUser = (e) => {
     e.preventDefault();
     const username = e.target.username.value;
     const password = e.target.password.value;
@@ -1359,18 +1360,41 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       return;
     }
 
-    if (users[username]) {
-      setError('This username already exists in the system.');
-      setSuccess('');
-      return;
+    const newUsers = { ...users }; // ก๊อปปี้ข้อมูลทั้งหมดออกมาก่อน
+
+    if (editingUser) {
+      // โหมดแก้ไข (EDIT)
+      if (editingUser.username !== username) {
+        // ถ้ามีการ "เปลี่ยน Username" ต้องเช็คก่อนว่า Username ใหม่ซ้ำกับคนอื่นในระบบไหม
+        if (newUsers[username]) {
+          setError('This new username already exists in the system.');
+          setSuccess('');
+          return;
+        }
+        // ลบ Key ชื่อเก่าทิ้ง เพื่อเตรียมใช้ชื่อใหม่
+        delete newUsers[editingUser.username];
+      }
+      
+      // อัปเดตข้อมูลลงไป
+      newUsers[username] = { username, password, name, role, faculty};
+      setSuccess(`Account '${username}' has been successfully updated.`);
+
+    } else {
+      // โหมดสร้างใหม่ (ADD)
+      if (users[username]) {
+        setError('This username already exists in the system.');
+        setSuccess('');
+        return;
+      }
+      newUsers[username] = { username, password, name, role, faculty };
+      setSuccess(`Account successfully created for ${role}.`);
     }
 
     setUsers({
       ...users,
       [username]: { username, password, name, role, faculty}
     });
-    
-    setSuccess(`Account successfully created for ${role}.`);
+    setEditingUser(null);
     setError('');
     setRevokeSuccess('');
     e.target.reset();
@@ -1395,11 +1419,29 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     setTimeout(() => setSuccess(''), 3000);
   };
 
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setError('');
+    setSuccess('');
+    setRevokeSuccess('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-          <UserPlus className="text-blue-500" /> Add New Account
+        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* เปลี่ยน Title ฟอร์มตามโหมด */}
+            {editingUser ? <Edit className="text-orange-500" /> : <UserPlus className="text-blue-500" />} 
+            {editingUser ? `Edit Account : ${editingUser.username}` : 'Add New Account'}
+          </div>
+          {/* ปุ่ม Cancel จะโผล่มาเฉพาะตอนแก้ไข */}
+          {editingUser && (
+            <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors">
+              <X size={20} />
+            </button>
+          )}
         </h3>
         {/* กล่อง Error (สีแดง แบบกระพริบ) */}
         {error && (
@@ -1423,22 +1465,25 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
         )}
 
-        <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        {/* 👉 3. ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
+        <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-            <input type="text" name="name" placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
-            <input type="text" name="username" placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="text" name="username" defaultValue={editingUser?.username || ''} placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <input type="password" name="password" placeholder="Create password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="password" name="password" defaultValue={editingUser?.password || ''} placeholder="Create password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
-            <select name="role" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <select name="role" defaultValue={editingUser?.role || 'admin'} 
+              onChange={(e) => {setEditingUser(e.target.value)}}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
               <option value="facultyCoordinator">FacultyCoordinator</option>
               <option value="universityCoordinator">UniversityCoordinator</option>
@@ -1447,14 +1492,14 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Faculty</label>
-            <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" >
+            <select name="faculty" defaultValue={editingUser?.faculty || ''} className="w-full px-3 py-2 border rounded-md bg-white" >
               <option value="">Select Faculty...</option>
               {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
 
-          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px]">
-            <UserPlus size={18} /> Add Account
+          <button type="submit" className={`font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px] text-white ${editingUser ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
+            {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
           </button>
         </form>
       </div>
@@ -1473,12 +1518,12 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                 <th className="px-6 py-3">Username</th>
                 <th className="px-6 py-3">Role</th>
                 <th className="px-6 py-3">Faculty</th>
-                <th className="px-6 py-3 text-right">Actions</th>
+                <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {Object.values(users).map(user => (
-                <tr key={user.username} className="hover:bg-slate-50 transition-colors">
+                <tr key={user.username} className={`transition-colors ${editingUser?.username === user.username ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
                   <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
                   <td className="px-6 py-4">{user.username}</td>
                   <td className="px-6 py-4">
@@ -1491,8 +1536,11 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                       <span className="capitalize">{user.role}</span>
                     </span>
                   </td>
-                  <td  className="px-6 py-4">{user.faculty}</td>
+                  <td  className="px-6 py-4">{user.faculty || '-'}</td>
                   <td className="px-6 py-4 text-right">
+                    <button onClick={() => handleEditClick(user)} className="text-orange-500 hover:text-orange-700 hover:bg-orange-100 px-3 py-1.5 rounded-md transition-colors inline-flex items-center gap-1">
+                      <Edit size={16} /> Edit
+                    </button>
                     {user.name !== currentUser.name ?(
                       <button 
                         onClick={() => handleRemoveUser(user.username)}
@@ -1501,7 +1549,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                         <Trash2 size={16} /> Revoke
                       </button>
                     ):(
-                      <span className="text-slate-400 text-xs">- Current User -</span>
+                      <span className="text-slate-400 text-xs px-2 py-1.5 inline-flex items-center">- Current User -</span>
                     )}
                   </td>
                 </tr>
