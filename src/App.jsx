@@ -78,7 +78,7 @@ const ACTION_MAP = {
     { label: 'Reject', next: STATUSES.REJECT_UNI, color: 'bg-red-500 hover:bg-red-600 text-white' , role: ['admin', 'universityCoordinator']}
   ],
   [STATUSES.APP_UNI]: [
-    { label: 'Start Visa Review', next: STATUSES.IN_PROG_VISA, color: 'bg-orange-600 hover:bg-orange-700 text-white' , role: ['admin', 'universityCoordinator']}
+    { label: 'Complete', next: STATUSES.COMPLETE, color: 'bg-orange-600 hover:bg-orange-700 text-white' , role: ['admin', 'universityCoordinator']}
   ],
   
 };
@@ -1303,7 +1303,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                         <Download size={12} /> University
                       </a>
                     )}
-                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName && !s.visaFileName) && (
+                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName ) && (
                       <span className="text-slate-400 text-xs">-</span>
                     )}
                   </div>
