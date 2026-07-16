@@ -1391,7 +1391,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     setRevokeSuccess(`Account for ${usernameToRemove} has been successfully revoked.`);
     setError('');
     setSuccess('');
-    
+    e.target.reset();
     setTimeout(() => setSuccess(''), 3000);
   };
 
