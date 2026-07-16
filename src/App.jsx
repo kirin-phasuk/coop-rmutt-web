@@ -1344,6 +1344,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
+  const [editingUser, setEditingUser] = useState(null);
 
   const handleAddUser = (e) => {
     e.preventDefault();
@@ -1376,6 +1377,44 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     e.target.reset();
     setTimeout(() => setSuccess(''), 3000);
   };
+  const handleEditUser = (e) => {
+    e.preventDefault();
+    const username = e.target.username.value;
+    const password = e.target.password.value;
+    const name = e.target.name.value;
+    const role = e.target.role.value;
+    const faculty = e.target.faculty.value;
+
+    // เช็คค่าว่าง
+    if (!username || !password || !name || !role|| !faculty) {
+      setError('Please complete all required fields.');
+      setSuccess('');
+      return;
+    }
+    const newUsers = { ...users }; // ก๊อปปี้ข้อมูลทั้งหมดออกมาก่อน
+    if (editingUser) {
+      // โหมดแก้ไข (EDIT)
+      if (editingUser.username !== username) {
+        // ถ้ามีการ "เปลี่ยน Username" ต้องเช็คก่อนว่า Username ใหม่ซ้ำกับคนอื่นในระบบไหม
+        if (newUsers[username]) {
+          setError('This new username already exists in the system.');
+          setSuccess('');
+          return;
+        }
+        // ลบ Key ชื่อเก่าทิ้ง เพื่อเตรียมใช้ชื่อใหม่
+        delete newUsers[editingUser.username];
+      }
+      newUsers[username] = { username, password, name, role, faculty};
+      setSuccess(`Account '${username}' has been successfully updated.`);
+    }
+    // บันทึกลง State และเคลียร์หน้าจอ
+    setUsers(newUsers);
+    setEditingUser(null); // ออกจากโหมดแก้ไข
+    setError('');
+    setRevokeSuccess('');
+    e.target.reset();
+    setTimeout(() => setSuccess(''), 3000);
+  }
 
   const handleRemoveUser = (usernameToRemove) => {
     if (usernameToRemove === currentUser.username) {
@@ -1394,13 +1433,32 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     e.target.reset();
     setTimeout(() => setSuccess(''), 3000);
   };
+  // Click Edit Button
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setError('');
+    setSuccess('');
+    setRevokeSuccess('');
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนจอกลับขึ้นไปที่ฟอร์ม
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-          <UserPlus className="text-blue-500" /> Add New Account
+        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* เปลี่ยน Title ฟอร์มตามโหมด */}
+            {editingUser ? <Edit className="text-orange-500" /> : <UserPlus className="text-blue-500" />} 
+            {editingUser ? `Edit Account : ${editingUser.username}` : 'Add New Account'}
+          </div>
+          {/* ปุ่ม Cancel จะโผล่มาเฉพาะตอนแก้ไข */}
+          {editingUser && (
+            <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors">
+              <X size={20} />
+            </button>
+          )}
         </h3>
+
         {/* กล่อง Error (สีแดง แบบกระพริบ) */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-700 shadow-sm animate-pulse">
@@ -1422,6 +1480,48 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <p className="font-bold">{revokeSuccess}</p>
           </div>
         )}
+
+        {/* 👉 3. ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
+        <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleEditUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+            <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+            <input type="text" name="username" defaultValue={editingUser?.username || ''} placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <input type="text" name="password" defaultValue={editingUser?.password || ''} placeholder="Create password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
+            <select name="role" id="roleSelect" defaultValue={editingUser?.role || 'admin'} onChange={(e) => {
+                const facSelect = document.getElementById('facSelect');
+                if(e.target.value === 'facultyCoordinator') facSelect.removeAttribute('disabled');
+                else { facSelect.setAttribute('disabled', 'true'); facSelect.value = ''; }
+              }} 
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="admin">Administrator</option>
+              <option value="facultyCoordinator">Faculty Coordinator</option>
+              <option value="universityCoordinator">University Coordinator</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Faculty</label>
+            <select name="faculty" id="facSelect" defaultValue={editingUser?.faculty || ''} disabled={!editingUser || editingUser.role !== 'facultyCoordinator'} className="w-full px-3 py-2 border rounded-md bg-white disabled:opacity-50 disabled:bg-slate-50" >
+              <option value="">Select Faculty...</option>
+              {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+
+          <button type="submit" className={`font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px] text-white ${editingUser ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
+            {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
+          </button>
+        </form>
 
         <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
@@ -1491,8 +1591,11 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                       <span className="capitalize">{user.role}</span>
                     </span>
                   </td>
-                  <td  className="px-6 py-4">{user.faculty}</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4">{user.faculty}</td>
+                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    <button onClick={() => handleEditClick(user)} className="text-orange-500 hover:text-orange-700 hover:bg-orange-100 px-3 py-1.5 rounded-md transition-colors inline-flex items-center gap-1">
+                      <Edit size={16} /> Edit
+                    </button>
                     {user.name !== currentUser.name ?(
                       <button 
                         onClick={() => handleRemoveUser(user.username)}
