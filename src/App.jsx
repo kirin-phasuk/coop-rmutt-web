@@ -351,7 +351,7 @@ export default function App() {
             </div>
             <div>
               <div className="text-sm font-medium text-white">{currentUser.name}</div>
-              <div className="text-xs text-blue-400 capitalize">{currentUser.role === 'facultyCoordinator' ? `Fac: ${currentUser.faculty}` : currentUser.role}</div>
+              <div className="text-xs text-blue-400 capitalize">{currentUser.role}</div>
             </div>
           </div>
         </div>
