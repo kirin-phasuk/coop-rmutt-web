@@ -1549,7 +1549,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                         <Trash2 size={16} /> Revoke
                       </button>
                     ):(
-                      <span className="text-slate-400 text-xs px-3 py-1.5 rounded-md inline-flex items-center gap-1">- Current User -</span>
+                      <span className="text-slate-400 px-6 py-4 font-medium items-center gap-1">- Current User -</span>
                     )}
                   </td>
                 </tr>
