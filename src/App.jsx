@@ -54,31 +54,31 @@ const STATUS_COLORS = {
 
 const ACTION_MAP = {
   [STATUSES.SUBMITTED]: [
-    { label: 'Start Faculty Review', next: STATUSES.IN_PROG_FAC, color: 'bg-blue-600 hover:bg-blue-700 text-white' }
+    { label: 'Start Faculty Review', next: STATUSES.IN_PROG_FAC, color: 'bg-blue-600 hover:bg-blue-700 text-white' , role: ['admin','facultyCoordinator']}
   ],
   [STATUSES.IN_PROG_FAC]: [
-    { label: 'Approve (Fac)', next: STATUSES.APP_FAC, color: 'bg-emerald-600 hover:bg-emerald-700 text-white' },
-    { label: 'Hold', next: STATUSES.HOLD_FAC, color: 'bg-amber-500 hover:bg-amber-600 text-white' },
-    { label: 'Reject', next: STATUSES.REJECT_FAC, color: 'bg-red-500 hover:bg-red-600 text-white' }
+    { label: 'Approve (Fac)', next: STATUSES.APP_FAC, color: 'bg-emerald-600 hover:bg-emerald-700 text-white', role: ['admin', 'facultyCoordinator'] },
+    { label: 'Hold', next: STATUSES.HOLD_FAC, color: 'bg-amber-500 hover:bg-amber-600 text-white', role: ['admin', 'facultyCoordinator'] },
+    { label: 'Reject', next: STATUSES.REJECT_FAC, color: 'bg-red-500 hover:bg-red-600 text-white', role: ['admin', 'facultyCoordinator'] }
   ],
   [STATUSES.HOLD_FAC]: [
-    { label: 'Resume', next: STATUSES.IN_PROG_FAC, color: 'bg-blue-500 hover:bg-blue-600 text-white' },
-    { label: 'Reject', next: STATUSES.REJECT_FAC, color: 'bg-red-500 hover:bg-red-600 text-white' }
+    { label: 'Resume', next: STATUSES.IN_PROG_FAC, color: 'bg-blue-500 hover:bg-blue-600 text-white' , role: ['admin', 'facultyCoordinator']},
+    { label: 'Reject', next: STATUSES.REJECT_FAC, color: 'bg-red-500 hover:bg-red-600 text-white' , role: ['admin', 'facultyCoordinator']}
   ],
   [STATUSES.APP_FAC]: [
-    { label: 'Start Uni Review', next: STATUSES.IN_PROG_UNI, color: 'bg-indigo-600 hover:bg-indigo-700 text-white' }
+    { label: 'Start Uni Review', next: STATUSES.IN_PROG_UNI, color: 'bg-indigo-600 hover:bg-indigo-700 text-white' , role: ['admin', 'facultyCoordinator']}
   ],
   [STATUSES.IN_PROG_UNI]: [
-    { label: 'Approve (Uni)', next: STATUSES.APP_UNI, color: 'bg-teal-600 hover:bg-teal-700 text-white' },
-    { label: 'Hold', next: STATUSES.HOLD_UNI, color: 'bg-amber-500 hover:bg-amber-600 text-white' },
-    { label: 'Reject', next: STATUSES.REJECT_UNI, color: 'bg-red-500 hover:bg-red-600 text-white' }
+    { label: 'Approve (Uni)', next: STATUSES.APP_UNI, color: 'bg-teal-600 hover:bg-teal-700 text-white' , role: ['admin', 'universityCoordinator']},
+    { label: 'Hold', next: STATUSES.HOLD_UNI, color: 'bg-amber-500 hover:bg-amber-600 text-white' , role: ['admin', 'universityCoordinator']},
+    { label: 'Reject', next: STATUSES.REJECT_UNI, color: 'bg-red-500 hover:bg-red-600 text-white' , role: ['admin', 'universityCoordinator']}
   ],
   [STATUSES.HOLD_UNI]: [
-    { label: 'Resume', next: STATUSES.IN_PROG_UNI, color: 'bg-blue-500 hover:bg-blue-600 text-white' },
-    { label: 'Reject', next: STATUSES.REJECT_UNI, color: 'bg-red-500 hover:bg-red-600 text-white' }
+    { label: 'Resume', next: STATUSES.IN_PROG_UNI, color: 'bg-blue-500 hover:bg-blue-600 text-white' , role: ['admin', 'universityCoordinator']},
+    { label: 'Reject', next: STATUSES.REJECT_UNI, color: 'bg-red-500 hover:bg-red-600 text-white' , role: ['admin', 'universityCoordinator']}
   ],
   [STATUSES.APP_UNI]: [
-    { label: 'Start Visa Review', next: STATUSES.IN_PROG_VISA, color: 'bg-orange-600 hover:bg-orange-700 text-white' }
+    { label: 'Start Visa Review', next: STATUSES.IN_PROG_VISA, color: 'bg-orange-600 hover:bg-orange-700 text-white' , role: ['admin', 'universityCoordinator']}
   ],
   
 };
@@ -1474,7 +1474,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                       user.role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
-                      user.role === 'coordinator' ? 'bg-blue-100 text-blue-800 border-blue-200' : 
+                      user.role === 'facultyCoordinator' ? 'bg-blue-100 text-blue-800 border-blue-200' : 
+                      user.role === 'universityCoordinator' ? 'bg-blue-100 text-blue-800 border-blue-200' : 
                       'bg-orange-100 text-orange-800 border-orange-200'
                     }`}>
                       <span className="capitalize">{user.role}</span>
