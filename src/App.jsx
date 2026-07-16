@@ -991,10 +991,11 @@ function ApprovalView({ students, onUpdateStatus , currentUsers}) {
     if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
     if (filter === 'ALL') return true;
     if (filter === 'ACTIVE') return ![STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI, STATUSES.HOLD_FAC, STATUSES.HOLD_UNI ].includes(s.status);
-    if (filter === 'HOLD') return [STATUSES.HOLD_FAC, STATUSES.HOLD_UNI, STATUSES.HOLD_VISA].includes(s.status);
+    if (filter === 'HOLD') return [STATUSES.HOLD_FAC, STATUSES.HOLD_UNI].includes(s.status);
     if (filter === 'RESOLVED') return [STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI ].includes(s.status);
     return true;
   });
+
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full max-w-6xl mx-auto">
@@ -1014,7 +1015,7 @@ function ApprovalView({ students, onUpdateStatus , currentUsers}) {
         <div className="grid gap-4">
           {filteredStudents.map(student =>{
             const isCompleted = student.status === STATUSES.COMPLETE;
-            const availableActions = (ACTION_MAP[student.status] || []).filter(action => action.role.includes(currentUser.role));
+            const availableActions = (ACTION_MAP[student.status] || []).filter(action => !action.role || action.role.includes(currentUser?.role));
           return(
             <div key={student.id} className={`border rounded-lg p-5 flex flex-col lg:flex-row gap-6 justify-between ${student.status === STATUSES.COMPLETE ? 'border-purple-300 bg-purple-50/20' : 'border-slate-200 bg-white'}`}>
               <div className="flex-1 w-full">
@@ -1121,8 +1122,6 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
     return students.filter(s => {
       if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
       if (currentUser.role === 'student' && s.createdBy !== currentUser.username) return false;
-      return true;
-
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch = 
         s.firstName.toLowerCase().includes(searchLower) ||
@@ -1136,7 +1135,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
 
       return matchesSearch && matchesStatus && matchesYear;
     });
-  }, [students, , currentUser, searchTerm, statusFilter, yearFilter ]);
+  }, [students, currentUser, searchTerm, statusFilter, yearFilter ]);
 
   const handleExportExcel = () => {
     // 1. เตรียมหัวตาราง
