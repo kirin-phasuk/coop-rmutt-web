@@ -461,13 +461,13 @@ function DashboardView({ students }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard title="Total Records" value={stats.total} icon={<Users />} color="bg-slate-500" />
         <StatCard title="Submitted" value={stats.submitted} icon={<Clock />} color="bg-yellow-500" />
-        <StatCard title="In Progress Fac" value={stats.inProgress_Fac} icon={<AlertCircle />} color="bg-blue-500" />
+        <StatCard title="In Progress Fac" value={stats.inProgress_Fac} icon={<Clock />} color="bg-blue-500" />
         <StatCard title="Approved Fac" value={stats.approved_Fac} icon={<CheckCircle2 />} color="bg-green-500" />
-        <StatCard title="Hold On Fac" value={stats.holdOn_Fac} icon={<CheckCircle2 />} color="bg-orange-500" />
+        <StatCard title="Hold On Fac" value={stats.holdOn_Fac} icon={<AlertCircle />} color="bg-orange-500" />
         <StatCard title="Rejected Fac" value={stats.rejected_Fac} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="In Progress Uni" value={stats.inProgress_Uni} icon={<AlertCircle />} color="bg-blue-500" />
+        <StatCard title="In Progress Uni" value={stats.inProgress_Uni} icon={<Clock />} color="bg-blue-500" />
         <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} color="bg-green-500" />
-        <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<CheckCircle2 />} color="bg-orange-500" />
+        <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<AlertCircle />} color="bg-orange-500" />
         <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} color="bg-red-500" />
         <StatCard title="Complete" value={stats.complete} icon={<XCircle />} color="bg-green-500" />
       </div>
@@ -698,7 +698,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
         </div>
 
         {/* Section 4: Document Attachments */}
-        {['admin', 'facultyCoordinator', 'universityCoordinator','student'].includes(currentUser.role) && (
+        {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
           <div className="space-y-6">
@@ -1141,7 +1141,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
     // 1. เตรียมหัวตาราง
     const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
       'Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
-      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)','Edit&Delete'];
+      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)'];
     
     // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
     const rows = filteredStudents.map(s => [
