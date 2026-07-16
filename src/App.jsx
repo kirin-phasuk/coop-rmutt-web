@@ -983,7 +983,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   );
 }
 
-function ApprovalView({ students, onUpdateStatus , currentUsers}) {
+function ApprovalView({ students, onUpdateStatus , currentUser}) {
   const [filter, setFilter] = useState('ALL');
 
   // กรองตามการจัดกลุ่มสถานะ
