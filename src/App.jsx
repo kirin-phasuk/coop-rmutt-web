@@ -1471,6 +1471,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                 <th className="px-6 py-3">Full Name</th>
                 <th className="px-6 py-3">Username</th>
                 <th className="px-6 py-3">Role</th>
+                <th className="px-6 py-3">Faculty</th>
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
