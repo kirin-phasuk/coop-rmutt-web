@@ -1063,7 +1063,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                   </div>
                 )}
 
-                {/* ปุ่มย้อนกลับไป Submitted เพื่อให้นักศึกษาแก้ (แสดงเสมอถ้าไม่ใช่ Submitted) */}
+                {/* ปุ่มย้อนกลับไป Submitted เสมอ */}
                 {student.status !== STATUSES.SUBMITTED && (
                     <button 
                       onClick={() => onUpdateStatus(student.id, STATUSES.SUBMITTED)} 
@@ -1444,6 +1444,14 @@ function UserManagementView({ users, setUsers ,currentUser}) {
               <option value="student">Student</option>
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Faculty</label>
+            <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" >
+              <option value="">Select Faculty...</option>
+              {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+
           <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px]">
             <UserPlus size={18} /> Add Account
           </button>
