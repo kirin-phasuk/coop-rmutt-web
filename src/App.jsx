@@ -12,7 +12,7 @@ const FACULTIES = [
   "Faculty of Engineering", "Faculty of Business Administration", "Faculty of Home Economics Technology",
   "Faculty of Fine and Applied Arts", "Faculty of Agricultural Technology", "Faculty of Technical Education",
   "Faculty of Architecture", "Faculty of Science and Technology", "Faculty of Mass Communication Technology",
-  "Faculty of Liberal Arts", "Faculty of Nursing", "Faculty of Integrative Medicine"
+  "Faculty of Liberal Arts", "Faculty of Nursing", "Faculty of Integrative Medicine" ,"-"
 ];
 
 // --- Mock Data & Constants ---
@@ -1535,7 +1535,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                       <span className="capitalize">{user.role}</span>
                     </span>
                   </td>
-                  <td  className="px-6 py-4">{user.faculty || '-'}</td>
+                  <td className="px-6 py-4">{user.faculty || '-'}</td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => handleEditClick(user)} className="text-orange-500 hover:text-orange-700 hover:bg-orange-100 px-3 py-1.5 rounded-md transition-colors inline-flex items-center gap-1">
                       <Edit size={16} /> Edit
