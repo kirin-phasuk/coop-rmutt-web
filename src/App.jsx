@@ -1345,7 +1345,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
-  // 👉 เพิ่ม State สำหรับควบคุม Dropdown Role ว่าตอนนี้เลือกอะไรอยู่
+
   const [selectedRole, setSelectedRole] = useState('admin');
 
   const handleSaveUser = (e) => {
@@ -1356,17 +1356,12 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const role = e.target.role.value;
     const faculty = e.target.faculty.value ? e.target.faculty.value : '';
 
-    if (!username || !password || !name || !role) {
+    if (!username || !password || !name || !role || !faculty) {
       setError('Please complete all required fields.');
       setSuccess('');
       return;
     }
-    if (role === 'facultyCoordinator','student' && !faculty) {
-      setError('Please select a faculty.');
-      setSuccess('');
-      return;
-    }
-    const finalFaculty = (role === 'facultyCoordinator','student') ? faculty : '';
+
     const newUsers = { ...users };
 
     if (editingUser) {
@@ -1383,7 +1378,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       }
       
       // อัปเดตข้อมูลลงไป
-      newUsers[username] = { username, password, name, role, faculty: finalFaculty};
+      newUsers[username] = { username, password, name, role, faculty};
       setSuccess(`Account '${username}' has been successfully updated.`);
     } else {
       // โหมดสร้างใหม่ (ADD)
@@ -1392,13 +1387,14 @@ function UserManagementView({ users, setUsers ,currentUser}) {
         setSuccess('');
         return;
       }
-      newUsers[username] = { username, password, name, role, faculty: finalFaculty };
+      newUsers[username] = { username, password, name, role, faculty };
       setSuccess(`Account successfully created for ${role}.`);
     }
 
     // บันทึกลง State และเคลียร์หน้าจอ
     setUsers(newUsers);
     setEditingUser(null); // ออกจากโหมดแก้ไข
+    setSelectedRole('admin');
     setError('');
     setRevokeSuccess('');
     e.target.reset();
@@ -1425,16 +1421,10 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   // Click Edit Button
   const handleEditClick = (user) => {
     setEditingUser(user);
-    setSelectedRole(user.role);
     setError('');
     setSuccess('');
     setRevokeSuccess('');
     window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนจอกลับขึ้นไปที่ฟอร์ม
-  };
-  const handleCancelEdit = () => {
-    setEditingUser(null);
-    setSelectedRole('admin');
-    setError('');
   };
 
   return (
@@ -1492,9 +1482,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
-            <select name="role" id="roleSelect" defaultValue={editingUser?.role || 'admin'}
-              onChange={(e) => setSelectedRole(e.target.value)} // 👉 3. อัปเดต State เมื่อเปลี่ยน Role
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            <select name="role" id="roleSelect" defaultValue={editingUser?.role || 'admin'} 
+            onChange={(e) => setSelectedRole(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
               <option value="facultyCoordinator">Faculty Coordinator</option>
               <option value="universityCoordinator">University Coordinator</option>
@@ -1503,7 +1492,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Faculty</label>
-            <select name="faculty" id="facSelect" defaultValue={editingUser?.faculty || ''} disabled={!editingUser || editingUser.role !== 'facultyCoordinator'} className="w-full px-3 py-2 border rounded-md bg-white disabled:opacity-50 disabled:bg-slate-50" >
+            <select name="faculty" id="facSelect" defaultValue={editingUser?.faculty || ''} disabled={!editingUser} className="w-full px-3 py-2 border rounded-md bg-white disabled:opacity-50 disabled:bg-slate-50" >
               <option value="">Select Faculty...</option>
               {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
@@ -1534,7 +1523,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {Object.values(users).map(user => (
-                <tr key={user.username} className={`transition-colors ${editingUser?.username === user.username ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
+                <tr key={user.username} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
                   <td className="px-6 py-4">{user.username}</td>
                   <td className="px-6 py-4">
