@@ -469,7 +469,7 @@ function DashboardView({ students }) {
         <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} color="bg-green-500" />
         <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<AlertCircle />} color="bg-orange-500" />
         <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="Complete" value={stats.complete} icon={<XCircle />} color="bg-green-500" />
+        <StatCard title="Complete" value={stats.complete} icon={<CheckCircle2 />} color="bg-green-500" />
       </div>
 
       {/* Map & Region Details */}
@@ -846,7 +846,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
             <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border rounded-md" /></div>
             <div>
               <label className="block text-sm font-medium mb-1">Faculty</label>
-              <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" defaultValue={student.faculty} disabled={isUni || isFac || isStudent}>
+              <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" defaultValue={student.faculty}>
                 {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
