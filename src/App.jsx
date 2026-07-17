@@ -138,13 +138,13 @@ const COUNTRIES_LIST = Object.keys(COUNTRY_REGIONS).sort();
 
 // World Map Zones
 const ZONES = [
-  { id: 'NA', name: 'North America', top: '30%', left: '20%' },
-  { id: 'SA', name: 'South America', top: '70%', left: '30%' },
-  { id: 'EU', name: 'Europe', top: '25%', left: '50%' },
-  { id: 'AF', name: 'Africa', top: '60%', left: '52%' },
-  { id: 'ME', name: 'Middle East', top: '45%', left: '60%' },
-  { id: 'AS', name: 'Asia', top: '35%', left: '75%' },
-  { id: 'OC', name: 'Oceania', top: '75%', left: '85%' },
+  { id: 'NA', name: 'North America', top: '40%', left: '20%' },
+  { id: 'SA', name: 'South America', top: '80%', left: '30%' },
+  { id: 'EU', name: 'Europe', top: '35%', left: '50%' },
+  { id: 'AF', name: 'Africa', top: '70%', left: '52%' },
+  { id: 'ME', name: 'Middle East', top: '55%', left: '60%' },
+  { id: 'AS', name: 'Asia', top: '45%', left: '75%' },
+  { id: 'OC', name: 'Oceania', top: '85%', left: '85%' },
 ];
 
 // Region Mapping Function
