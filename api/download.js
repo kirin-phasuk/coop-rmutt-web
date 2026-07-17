@@ -3,9 +3,6 @@ export default async function handler(req, res) {
   const blobUrl = req.query.url; 
 
   //  เช็คสิทธิ์ความปลอดภัยตรงนี้ (เช่น ตรวจสอบว่าได้ Login แล้วหรือยัง)
-   if (!isUserLoggedIn) {
-     return res.status(401).send("Unauthorized");
-   }
 
   try {
     // เอากุญแจลับ (Token) ไปไขประตู Vercel เพื่อขอดึงไฟล์
