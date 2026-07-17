@@ -1072,7 +1072,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
               
               {student.facultyScholarshipFileName && (
                 <a 
-                  href={student.facultyScholarshipFileName} 
+                  href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
@@ -1118,7 +1118,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                 )}
                 {student.facultyScholarshipFileName && (
                   <a 
-                    href={student.facultyScholarshipFileName} 
+                    href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}href={student.facultyScholarshipFileName} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
