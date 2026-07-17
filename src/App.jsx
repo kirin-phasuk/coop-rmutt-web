@@ -755,6 +755,44 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   );
 }
 
+const fileUrl = "https://u8xvfd0qw8lkqkp9.public.blob.vercel-storage.com/test.pdf";
+
+function SimpleDownload() {
+  return (
+    <div>
+      <h3>ดาวน์โหลด/เปิดดูไฟล์</h3>
+      {/* ใส่ URL ลงไปตรงๆ ได้เลย เพราะมันเป็น Public */}
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+        คลิกเพื่อเปิดดูไฟล์
+      </a>
+    </div>
+  );
+}
+
+function SimpleUpload() {
+  const handleUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // ยิงไฟล์ไปที่ API /api/upload
+    const res = await fetch(`/api/upload?filename=${file.name}`, {
+      method: 'POST',
+      body: file,
+    });
+
+    const data = await res.json();
+    console.log("อัปโหลดสำเร็จ! ลิงก์ไฟล์คือ:", data.url);
+    alert(`อัปโหลดสำเร็จ! ลิงก์: ${data.url}`);
+  };
+
+  return (
+    <div>
+      <h3>อัปโหลดไฟล์แบบง่าย</h3>
+      <input type="file" onChange={handleUpload} />
+    </div>
+  );
+}
+
 function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser  }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
