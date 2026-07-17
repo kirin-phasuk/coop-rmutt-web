@@ -755,44 +755,6 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   );
 }
 
-const fileUrl = "https://u8xvfd0qw8lkqkp9.public.blob.vercel-storage.com/test.pdf";
-
-function SimpleDownload() {
-  return (
-    <div>
-      <h3>ดาวน์โหลด/เปิดดูไฟล์</h3>
-      {/* ใส่ URL ลงไปตรงๆ ได้เลย เพราะมันเป็น Public */}
-      <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-        คลิกเพื่อเปิดดูไฟล์
-      </a>
-    </div>
-  );
-}
-
-function SimpleUpload() {
-  const handleUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // ยิงไฟล์ไปที่ API /api/upload
-    const res = await fetch(`/api/upload?filename=${file.name}`, {
-      method: 'POST',
-      body: file,
-    });
-
-    const data = await res.json();
-    console.log("อัปโหลดสำเร็จ! ลิงก์ไฟล์คือ:", data.url);
-    alert(`อัปโหลดสำเร็จ! ลิงก์: ${data.url}`);
-  };
-
-  return (
-    <div>
-      <h3>อัปโหลดไฟล์แบบง่าย</h3>
-      <input type="file" onChange={handleUpload} />
-    </div>
-  );
-}
-
 function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser  }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -987,13 +949,11 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div>
                   <label className="block text-sm font-bold mb-2 text-purple-700">Presentation File (PDF/PPT)</label>
-                  {student.projectPdfFileName && <a href={student.projectPdfFileName} target="_blank" className="text-xs text-purple-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View File</a>}
-                  <input type="file" name="projectPdfFile" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                  {student.projectPdfFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> View File</a>}                  <input type="file" name="projectPdfFile" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold mb-2 text-purple-700">Full Report Book (PDF)</label>
-                  {student.projectReportFileName && <a href={student.projectReportFileName} target="_blank" className="text-xs text-purple-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Report</a>}
-                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                  {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> View Report</a>}                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
                 </div>
               </div>
             </div>
