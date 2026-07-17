@@ -925,7 +925,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                     <label className="block text-sm font-medium mb-2">Attach PDF</label>
-                    {student.uniScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" className="text-xs text-emerald-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
+                    {student.uniScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
                     <input type="file" name="uniScholarshipFile" accept=".pdf" disabled={isStudent || isFac} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
                  </div>
                  <div>
@@ -1333,7 +1333,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                       </a>
                     )}
                     {s.uniScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(s.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
+                      <a href={`/api/download?url=${encodeURIComponent(s.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
                         <Download size={12} /> University
                       </a>
                     )}
