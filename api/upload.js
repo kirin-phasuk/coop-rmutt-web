@@ -23,7 +23,7 @@ export default async function handler(request, response) {
 
     // โยนไฟล์ (request body) ขึ้น Vercel Blob และตั้งให้เป็นสาธารณะ (เปิดดูได้)
     const blob = await put(filename, request, {
-      access: 'public',
+      access: 'private',
     });
 
     // ส่ง URL ของไฟล์ที่อัปโหลดเสร็จแล้วกลับไปให้ React
