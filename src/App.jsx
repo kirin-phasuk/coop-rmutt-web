@@ -769,6 +769,9 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   const isUni = currentUser.role === 'universityCoordinator';
   const isAdmin = currentUser.role === 'admin';
 
+  const canEditFacEval = isAdmin || isFac; // มีแค่ Admin และคณะที่แก้คะแนนคณะได้
+  const canEditUniEval = isAdmin || isUni; // มีแค่ Admin และมหาลัยที่แก้คะแนนมหาลัยได้
+
   const isCompleteProgress = [STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status);
 
   const handleSubmit = async (e) => {
@@ -964,18 +967,18 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="bg-blue-50/50 p-4 rounded border border-blue-100">
                 <h5 className="font-bold text-blue-800 mb-3 flex items-center gap-1"><MessageSquare size={16}/> Faculty Evaluation</h5>
                 <div className="mb-3"><label className="block text-xs font-semibold mb-1 text-slate-500">SCORE</label>
-                  <StarRating rating={facScore} setRating={setFacScore} readOnly={isStudent || isUni} />
+                  <StarRating rating={facScore} setRating={setFacScore} readOnly={!canEditFacEval} />
                 </div>
-                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="facComment" defaultValue={student.facComment} disabled={isStudent || isUni} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="Faculty advisor comments..." /></div>
+                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="facComment" defaultValue={student.facComment} disabled={!canEditFacEval} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="Faculty advisor comments..." /></div>
               </div>
 
               {/* Uni Evaluation */}
               <div className="bg-emerald-50/50 p-4 rounded border border-emerald-100">
                 <h5 className="font-bold text-emerald-800 mb-3 flex items-center gap-1"><MessageSquare size={16}/> University Evaluation</h5>
                 <div className="mb-3"><label className="block text-xs font-semibold mb-1 text-slate-500">SCORE</label>
-                  <StarRating rating={uniScore} setRating={setUniScore} readOnly={isStudent || isFac} />
+                  <StarRating rating={uniScore} setRating={setUniScore} readOnly={!canEditUniEval} />
                 </div>
-                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="uniComment" defaultValue={student.uniComment} disabled={isStudent || isFac} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="University advisor comments..." /></div>
+                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="uniComment" defaultValue={student.uniComment} disabled={!canEditUniEval} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="University advisor comments..." /></div>
               </div>
             </div>
 
@@ -1034,6 +1037,9 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
           {filteredStudents.map(student =>{
             const isCompleted = student.status === STATUSES.COMPLETE;
             const availableActions = (ACTION_MAP[student.status] || []).filter(action => !action.role || action.role.includes(currentUser?.role));
+            const canRevert = currentUser?.role === 'admin' ||
+              (currentUser?.role === 'facultyCoordinator' && [STATUSES.IN_PROG_FAC, STATUSES.HOLD_FAC, STATUSES.REJECT_FAC, STATUSES.APP_FAC].includes(student.status)) ||
+              (currentUser?.role === 'universityCoordinator' && [STATUSES.IN_PROG_UNI, STATUSES.HOLD_UNI, STATUSES.REJECT_UNI, STATUSES.APP_UNI].includes(student.status));
           return(
             <div key={student.id} className={`border rounded-lg p-5 flex flex-col lg:flex-row gap-6 justify-between ${student.status === STATUSES.COMPLETE ? 'border-purple-300 bg-purple-50/20' : 'border-slate-200 bg-white'}`}>
               <div className="flex-1 w-full">
@@ -1082,7 +1088,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                 )}
 
                 {/* ปุ่มย้อนกลับไป Submitted เสมอ */}
-                {student.status !== STATUSES.SUBMITTED && (
+                {student.status !== STATUSES.SUBMITTED && canRevert&& (
                     <button 
                       onClick={() => onUpdateStatus(student.id, STATUSES.SUBMITTED)} 
                       className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-center gap-1 mt-1"
