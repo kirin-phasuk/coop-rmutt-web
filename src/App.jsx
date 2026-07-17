@@ -505,18 +505,18 @@ function DashboardView({ students }) {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard title="Total Records" value={stats.total} icon={<Users />} color="bg-slate-500" />
-        <StatCard title="Submitted" value={stats.submitted} icon={<Clock />} color="bg-yellow-500" />
-        <StatCard title="In Progress Fac" value={stats.inProgress_Fac} icon={<Clock />} color="bg-blue-500" />
-        <StatCard title="Approved Fac" value={stats.approved_Fac} icon={<CheckCircle2 />} color="bg-green-500" />
-        <StatCard title="Hold On Fac" value={stats.holdOn_Fac} icon={<AlertCircle />} color="bg-orange-500" />
-        <StatCard title="Rejected Fac" value={stats.rejected_Fac} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="In Progress Uni" value={stats.inProgress_Uni} icon={<Clock />} color="bg-blue-500" />
-        <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} color="bg-green-500" />
-        <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<AlertCircle />} color="bg-orange-500" />
-        <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} color="bg-red-500" />
-        <StatCard title="Complete" value={stats.complete} icon={<CheckCircle2 />} color="bg-green-500" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <StatCard title="Total Records" value={stats.total} icon={<Users />} gradient="from-slate-500 to-slate-600" />
+        <StatCard title="Submitted" value={stats.submitted} icon={<Clock />} gradient="from-yellow-400 to-amber-500" />
+        <StatCard title="In Progress Fac" value={stats.inProgress_Fac} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
+        <StatCard title="Approved Fac" value={stats.approved_Fac} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title="Hold On Fac" value={stats.holdOn_Fac} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
+        <StatCard title="Rejected Fac" value={stats.rejected_Fac} icon={<XCircle />} gradient="from-red-400 to-red-600" />
+        <StatCard title="In Progress Uni" value={stats.inProgress_Uni} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
+        <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
+        <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} gradient="from-red-400 to-red-600" />
+        <StatCard title="Complete" value={stats.complete} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
       </div>
 
       {/* Map & Region Details */}
@@ -725,9 +725,12 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" className="w-full px-3 py-2 border rounded-md" required/></div>
             <div>
-              <label className="block text-sm font-medium mb-1">Country (Select or Type)</label>
-              <input type="text" name="country" list="country-list" className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Search country..." autoComplete="off" required/>
-            </div>            
+              <label className="block text-sm font-medium mb-1">Country *</label>
+              <select name="country" className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 bg-white" required>
+                <option value="">Select Country...</option>
+                {COUNTRIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>          
             <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" className="w-full px-3 py-2 border rounded-md" /></div>
             <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
             <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
@@ -920,9 +923,12 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" required/></div>
             <div>
-              <label className="block text-sm font-medium mb-1">Country (Select or Type)</label>
-              <input type="text" name="country" list="country-list" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 bg-white" placeholder="Search country..." autoComplete="off" required/>
-            </div>            
+              <label className="block text-sm font-medium mb-1">Country</label>
+              <select name="country" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 bg-white" required>
+                <option value="">Select Country...</option>
+                {COUNTRIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>        
             <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
             <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
             <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
