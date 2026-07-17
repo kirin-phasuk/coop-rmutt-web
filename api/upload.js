@@ -21,7 +21,6 @@ export default async function handler(request, response) {
       return response.status(400).json({ message: 'Filename is required' });
     }
 
-    // โยนไฟล์ (request body) ขึ้น Vercel Blob และตั้งให้เป็นสาธารณะ (เปิดดูได้)
     const blob = await put(filename, request, {
       access: 'private',
     });

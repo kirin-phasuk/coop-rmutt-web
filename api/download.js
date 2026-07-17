@@ -18,6 +18,8 @@ export default async function handler(req, res) {
     const contentType = response.headers.get('content-type');
     res.setHeader('Content-Type', contentType);
 
+    res.setHeader('Content-Disposition', 'attachment');
+    
     // แปลงไฟล์แล้วส่งกลับ
     const buffer = await response.arrayBuffer();
     res.status(200).send(Buffer.from(buffer));
