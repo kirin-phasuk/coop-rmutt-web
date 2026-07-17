@@ -93,6 +93,49 @@ const ACTION_MAP = {
 const YEARS = Array.from({ length: 21 }, (_, i) => 2016 + i);
 const SEMESTERS = [1, 2, 3];
 
+const COUNTRY_REGIONS = {
+  "Afghanistan": "AS", "Albania": "EU", "Algeria": "AF", "Andorra": "EU", "Angola": "AF",
+  "Antigua and Barbuda": "NA", "Argentina": "SA", "Armenia": "AS", "Australia": "OC", "Austria": "EU",
+  "Azerbaijan": "AS", "Bahamas": "NA", "Bahrain": "ME", "Bangladesh": "AS", "Barbados": "NA",
+  "Belarus": "EU", "Belgium": "EU", "Belize": "NA", "Benin": "AF", "Bhutan": "AS",
+  "Bolivia": "SA", "Bosnia and Herzegovina": "EU", "Botswana": "AF", "Brazil": "SA", "Brunei": "AS",
+  "Bulgaria": "EU", "Burkina Faso": "AF", "Burundi": "AF", "Cabo Verde": "AF", "Cambodia": "AS",
+  "Cameroon": "AF", "Canada": "NA", "Central African Republic": "AF", "Chad": "AF", "Chile": "SA",
+  "China": "AS", "Colombia": "SA", "Comoros": "AF", "Congo": "AF", "Costa Rica": "NA",
+  "Croatia": "EU", "Cuba": "NA", "Cyprus": "EU", "Czechia": "EU", "Côte d'Ivoire": "AF",
+  "Democratic Republic of the Congo": "AF", "Denmark": "EU", "Djibouti": "AF", "Dominica": "NA", "Dominican Republic": "NA",
+  "Ecuador": "SA", "Egypt": "ME", "El Salvador": "NA", "Equatorial Guinea": "AF", "Eritrea": "AF",
+  "Estonia": "EU", "Eswatini": "AF", "Ethiopia": "AF", "Fiji": "OC", "Finland": "EU",
+  "France": "EU", "Gabon": "AF", "Gambia": "AF", "Georgia": "AS", "Germany": "EU",
+  "Ghana": "AF", "Greece": "EU", "Grenada": "NA", "Guatemala": "NA", "Guinea": "AF",
+  "Guinea-Bissau": "AF", "Guyana": "SA", "Haiti": "NA", "Honduras": "NA", "Hungary": "EU",
+  "Iceland": "EU", "India": "AS", "Indonesia": "AS", "Iran": "ME", "Iraq": "ME",
+  "Ireland": "EU", "Israel": "ME", "Italy": "EU", "Jamaica": "NA", "Japan": "AS",
+  "Jordan": "ME", "Kazakhstan": "AS", "Kenya": "AF", "Kiribati": "OC", "Kuwait": "ME",
+  "Kyrgyzstan": "AS", "Laos": "AS", "Latvia": "EU", "Lebanon": "ME", "Lesotho": "AF",
+  "Liberia": "AF", "Libya": "AF", "Liechtenstein": "EU", "Lithuania": "EU", "Luxembourg": "EU",
+  "Madagascar": "AF", "Malawi": "AF", "Malaysia": "AS", "Maldives": "AS", "Mali": "AF",
+  "Malta": "EU", "Marshall Islands": "OC", "Mauritania": "AF", "Mauritius": "AF", "Mexico": "NA",
+  "Micronesia": "OC", "Moldova": "EU", "Monaco": "EU", "Mongolia": "AS", "Montenegro": "EU",
+  "Morocco": "AF", "Mozambique": "AF", "Myanmar": "AS", "Namibia": "AF", "Nauru": "OC",
+  "Nepal": "AS", "Netherlands": "EU", "New Zealand": "OC", "Nicaragua": "NA", "Niger": "AF",
+  "Nigeria": "AF", "North Korea": "AS", "North Macedonia": "EU", "Norway": "EU", "Oman": "ME",
+  "Pakistan": "AS", "Palau": "OC", "Palestine": "ME", "Panama": "NA", "Papua New Guinea": "OC",
+  "Paraguay": "SA", "Peru": "SA", "Philippines": "AS", "Poland": "EU", "Portugal": "EU",
+  "Qatar": "ME", "Romania": "EU", "Russia": "EU", "Rwanda": "AF", "Saint Kitts and Nevis": "NA",
+  "Saint Lucia": "NA", "Saint Vincent and the Grenadines": "NA", "Samoa": "OC", "San Marino": "EU",
+  "Sao Tome and Principe": "AF", "Saudi Arabia": "ME", "Senegal": "AF", "Serbia": "EU", "Seychelles": "AF",
+  "Sierra Leone": "AF", "Singapore": "AS", "Slovakia": "EU", "Slovenia": "EU", "Solomon Islands": "OC",
+  "Somalia": "AF", "South Africa": "AF", "South Korea": "AS", "South Sudan": "AF", "Spain": "EU",
+  "Sri Lanka": "AS", "Sudan": "AF", "Suriname": "SA", "Sweden": "EU", "Switzerland": "EU",
+  "Syria": "ME", "Tajikistan": "AS", "Tanzania": "AF", "Thailand": "AS", "Timor-Leste": "AS",
+  "Togo": "AF", "Tonga": "OC", "Trinidad and Tobago": "NA", "Tunisia": "AF", "Turkey": "ME",
+  "Turkmenistan": "AS", "Tuvalu": "OC", "Uganda": "AF", "Ukraine": "EU", "United Arab Emirates": "ME",
+  "United Kingdom": "EU", "United States": "NA", "Uruguay": "SA", "Uzbekistan": "AS", "Vanuatu": "OC",
+  "Venezuela": "SA", "Vietnam": "AS", "Yemen": "ME", "Zambia": "AF", "Zimbabwe": "AF"
+};
+const COUNTRIES_LIST = Object.keys(COUNTRY_REGIONS).sort();
+
 // World Map Zones
 const ZONES = [
   { id: 'NA', name: 'North America', top: '30%', left: '20%' },
@@ -106,15 +149,7 @@ const ZONES = [
 
 // Region Mapping Function
 const getRegion = (country) => {
-  const c = (country || '').toLowerCase();
-  if (c.includes('united states') || c.includes('america') || c.includes('canada')) return 'NA';
-  if (c.includes('brazil') || c.includes('argentina') || c.includes('chile') || c.includes('peru')) return 'SA';
-  if (c.includes('uk') || c.includes('england') || c.includes('germany') || c.includes('france') || c.includes('switzerland') || c.includes('italy') || c.includes('netherlands') || c.includes('europe')) return 'EU';
-  if (c.includes('africa') || c.includes('egypt') || c.includes('kenya') || c.includes('morocco')) return 'AF';
-  if (c.includes('uae') || c.includes('saudi') || c.includes('qatar') || c.includes('israel') || c.includes('arab')) return 'ME';
-  if (c.includes('australia') || c.includes('new zealand')) return 'OC';
-  // Default to Asia
-  return 'AS';
+  return COUNTRY_REGIONS[country] || 'AS'; // Default to Asia if not mapped
 };
 
 // Cookie Helper Functions
@@ -183,11 +218,19 @@ function NavItem({ icon, label, active, onClick }) {
   );
 }
 
-function StatCard({ title, value, icon, color }) {
+function StatCard({ title, value, icon, gradient }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center text-white shadow-inner`}>{icon}</div>
-      <div><p className="text-sm text-slate-500 font-medium">{title}</p><p className="text-2xl font-bold text-slate-800">{value}</p></div>
+    <div className={`bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 p-5 flex items-center gap-4 relative overflow-hidden group`}>
+      <div className={`absolute -right-6 -top-6 opacity-[0.03] group-hover:scale-110 group-hover:opacity-[0.06] transition-all duration-500`}>
+        {React.cloneElement(icon, { size: 100 })}
+      </div>
+      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-sm z-10`}>
+        {icon}
+      </div>
+      <div className="z-10">
+        <p className="text-sm text-slate-500 font-medium mb-0.5">{title}</p>
+        <p className="text-2xl font-bold text-slate-800">{value}</p>
+      </div>
     </div>
   );
 }
@@ -681,7 +724,10 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Country</label><input type="text" name="country" className="w-full px-3 py-2 border rounded-md" required/></div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Country (Select or Type)</label>
+              <input type="text" name="country" list="country-list" className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Search country..." autoComplete="off" required/>
+            </div>            
             <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" className="w-full px-3 py-2 border rounded-md" /></div>
             <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
             <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
@@ -873,7 +919,10 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Country</label><input type="text" name="country" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" required/></div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Country (Select or Type)</label>
+              <input type="text" name="country" list="country-list" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 bg-white" placeholder="Search country..." autoComplete="off" required/>
+            </div>            
             <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
             <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
             <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>

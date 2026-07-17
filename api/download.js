@@ -21,6 +21,6 @@ export default async function handler(req, res) {
     res.status(200).send(Buffer.from(buffer));
 
   } catch (error) {
-    res.status(500).send("Error downloading file");
+    res.status(500).send("Didn't have downloading file.");
   }
 }
