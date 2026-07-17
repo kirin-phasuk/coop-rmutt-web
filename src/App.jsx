@@ -758,6 +758,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
 function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser  }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitAction, setSubmitAction] = useState('update');
   // Local state for star rating
   const [facScore, setFacScore] = useState(student.facScore || 0);
   const [uniScore, setUniScore] = useState(student.uniScore || 0);
