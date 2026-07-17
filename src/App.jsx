@@ -869,8 +869,8 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
-    data.facScore = facScore;
-    data.uniScore = uniScore;
+    data.facScore = Number(facScore);
+    data.uniScore = Number(uniScore);
     // Submit Project ให้บังคับเปลี่ยนสถานะทันที
     if (submitAction === 'submitProject') {
       data.status = STATUSES.PROJ_SUBMITTED;
@@ -1107,8 +1107,8 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                   <p><strong>Position:</strong> {student.position}</p>
                   <p><strong>Academic Record:</strong> GPAX {student.gpax} | {student.engTest}</p>
                   <p><strong>Duration:</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>
-                  <p><strong>Faculty Fund:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName} target="_blank" className="text-blue-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
-                  <p><strong>Uni Fund:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-emerald-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
+                  <p><strong>Faculty Scholarship:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName} target="_blank" className="text-blue-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
+                  <p><strong>University Scholarship:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-emerald-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
                 </div>
                  {/* Project Sneak Peek */}
                 {[STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status) && student.projectName && (
@@ -1252,7 +1252,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
       new Date(s.returnDate).toLocaleDateString('en-US'),
       s.facultyScholarshipAmount || '0',
       s.uniScholarshipAmount || '0',
-      (s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (s.facScore || s.uniScore) ? `${(s.facScore||0)+(s.uniScore||0)}` : ''
+     (s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : ''
     ]);
 
     // รวมเป็นข้อความ CSV
@@ -1378,7 +1378,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
-                <td className="px-4 py-3 font-bold text-yellow-500">{s.status === STATUSES.COMPLETE && (s.facScore || s.uniScore) ? `★ ${(s.facScore||0)+(s.uniScore||0)}` : '-'}</td>
+                <td className="px-4 py-3 font-bold text-yellow-500">{(s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `★ ${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : '-'}</td>
 
                 {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
                 <td className="px-4 py-3 text-center print:hidden">
@@ -1399,7 +1399,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                   </div>
                 </td>
 
-                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50/50 border-l border-slate-100">
+                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
                   <div className="flex items-center justify-center gap-2">
                     
                     {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
