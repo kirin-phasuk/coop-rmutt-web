@@ -138,13 +138,13 @@ const COUNTRIES_LIST = Object.keys(COUNTRY_REGIONS).sort();
 
 // World Map Zones
 const ZONES = [
-  { id: 'NA', name: 'North America', top: '30%', left: '20%' },
-  { id: 'SA', name: 'South America', top: '70%', left: '30%' },
-  { id: 'EU', name: 'Europe', top: '25%', left: '50%' },
-  { id: 'AF', name: 'Africa', top: '60%', left: '52%' },
-  { id: 'ME', name: 'Middle East', top: '45%', left: '60%' },
-  { id: 'AS', name: 'Asia', top: '35%', left: '75%' },
-  { id: 'OC', name: 'Oceania', top: '75%', left: '85%' },
+  { id: 'NA', name: 'North America', top: '25%', left: '20%' },
+  { id: 'SA', name: 'South America', top: '65%', left: '30%' },
+  { id: 'EU', name: 'Europe', top: '20%', left: '50%' },
+  { id: 'AF', name: 'Africa', top: '55%', left: '52%' },
+  { id: 'ME', name: 'Middle East', top: '40%', left: '60%' },
+  { id: 'AS', name: 'Asia', top: '30%', left: '75%' },
+  { id: 'OC', name: 'Oceania', top: '70%', left: '85%' },
 ];
 
 // Region Mapping Function
@@ -508,14 +508,14 @@ function DashboardView({ students }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <StatCard title="Total Records" value={stats.total} icon={<Users />} gradient="from-slate-500 to-slate-600" />
         <StatCard title="Submitted" value={stats.submitted} icon={<Clock />} gradient="from-yellow-400 to-amber-500" />
-        <StatCard title="In Progress Fac" value={stats.inProgress_Fac} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
-        <StatCard title="Approved Fac" value={stats.approved_Fac} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
-        <StatCard title="Hold On Fac" value={stats.holdOn_Fac} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
-        <StatCard title="Rejected Fac" value={stats.rejected_Fac} icon={<XCircle />} gradient="from-red-400 to-red-600" />
-        <StatCard title="In Progress Uni" value={stats.inProgress_Uni} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
-        <StatCard title="Approved Uni" value={stats.approved_Uni} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
-        <StatCard title="Hold On Uni" value={stats.holdOn_Uni} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
-        <StatCard title="Rejected Uni" value={stats.rejected_Uni} icon={<XCircle />} gradient="from-red-400 to-red-600" />
+        <StatCard title="In Progress Faculty" value={stats.inProgress_Fac} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
+        <StatCard title="Approved Faculty" value={stats.approved_Fac} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title="Hold On Faculty" value={stats.holdOn_Fac} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
+        <StatCard title="Rejected Faculty" value={stats.rejected_Fac} icon={<XCircle />} gradient="from-red-400 to-red-600" />
+        <StatCard title="In Progress University" value={stats.inProgress_Uni} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
+        <StatCard title="Approved University" value={stats.approved_Uni} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title="Hold On University" value={stats.holdOn_Uni} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
+        <StatCard title="Rejected University" value={stats.rejected_Uni} icon={<XCircle />} gradient="from-red-400 to-red-600" />
         <StatCard title="Complete" value={stats.complete} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
       </div>
 
