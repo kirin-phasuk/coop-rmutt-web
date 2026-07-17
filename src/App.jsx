@@ -1321,12 +1321,12 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-center print:hidden">
                   <div className="flex flex-col gap-1.5 items-center justify-center">
                     {s.facultyScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
+                      <a href={`/api/download?url=${encodeURIComponent(s.facultyScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
                         <Download size={12} /> Faculty
                       </a>
                     )}
                     {s.uniScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
+                      <a href={`/api/download?url=${encodeURIComponent(s.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
                         <Download size={12} /> University
                       </a>
                     )}
