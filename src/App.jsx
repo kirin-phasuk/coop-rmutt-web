@@ -1069,18 +1069,6 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                          {student.projectReportFileName && <a href={student.projectReportFileName} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Report Book</a>}
                          {student.projectWebsite && <a href={student.projectWebsite} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Website</a>}
                       </div>
-                      <div className="flex items-center justify-center gap-2">
-                        {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
-                        {canEditRecord(currentUser, student) ? (
-                          <button onClick={() => onEdit(student)} title="Edit Record" className="text-orange-500 hover:text-orange-700 hover:bg-orange-50 p-1.5 rounded transition-colors"><Edit size={16} /></button>
-                        ) : (
-                          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-200">Locked</span>
-                        )}
-                        {/* Admin เท่านั้นที่ลบได้ */}
-                        {currentUser?.role === 'admin' && (
-                        <button onClick={() => onDelete(student.id)} title="Delete Record" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors"><Trash2 size={16} /></button>
-                        )}
-                      </div>
                     </div>
                   </div>
                 )}
