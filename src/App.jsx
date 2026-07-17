@@ -1354,6 +1354,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
               <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
               <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
               <th className="px-4 py-3 font-semibold text-center">Project Score</th>
+              <th className="px-4 py-3 font-semibold text-center">Document</th>
               <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">Actions</th>
             </tr>
           </thead>
