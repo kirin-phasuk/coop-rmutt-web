@@ -904,7 +904,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName} target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
+                   {student.facultyScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}  target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
                    <input type="file" name="facultyScholarshipFile" accept=".pdf" disabled={isStudent || isUni} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
                  </div>
                  <div>
@@ -922,7 +922,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                     <label className="block text-sm font-medium mb-2">Attach PDF</label>
-                    {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-xs text-emerald-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
+                    {student.uniScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" className="text-xs text-emerald-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
                     <input type="file" name="uniScholarshipFile" accept=".pdf" disabled={isStudent || isFac} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
                  </div>
                  <div>
@@ -953,7 +953,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                 </div>
                 <div>
                   <label className="block text-sm font-bold mb-2 text-purple-700">Full Report Book (PDF)</label>
-                  {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> View Report</a>}                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> View Report</a>}                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
                 </div>
               </div>
             </div>
@@ -1068,16 +1068,6 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                 )}
               </div>
               
-              {student.facultyScholarshipFileName && (
-                <a 
-                  href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
-                >
-                  <Download size={14}/> View Document
-                </a>
-              )}
               {/* Action Buttons based on Workflow */}
               <div className="flex flex-col gap-2 w-full lg:w-48 lg:shrink-0">
                 
@@ -1116,12 +1106,22 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
                 )}
                 {student.facultyScholarshipFileName && (
                   <a 
-                    href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}href={student.facultyScholarshipFileName} 
+                    href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
                   >
-                    <Download size={14}/> View Document
+                    <Download size={14}/> View Faculty_Scholarship Document 
+                  </a>
+                )}
+                {student.uniScholarshipFileName && (
+                  <a 
+                    href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
+                  >
+                    <Download size={14}/> View University_Scholarship Document
                   </a>
                 )}
                 </div>
@@ -1321,12 +1321,12 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-center print:hidden">
                   <div className="flex flex-col gap-1.5 items-center justify-center">
                     {s.facultyScholarshipFileName && (
-                      <a href={s.facultyScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
+                      <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
                         <Download size={12} /> Faculty
                       </a>
                     )}
                     {s.uniScholarshipFileName && (
-                      <a href={s.uniScholarshipFileName} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
+                      <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
                         <Download size={12} /> University
                       </a>
                     )}
