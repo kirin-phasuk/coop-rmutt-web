@@ -1399,7 +1399,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                   </div>
                 </td>
 
-                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
+                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50/50 border-l border-slate-100">
                   <div className="flex items-center justify-center gap-2">
                     
                     {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
