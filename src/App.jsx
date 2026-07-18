@@ -1596,24 +1596,6 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const newUsers = { ...users }; // ก๊อปปี้ข้อมูลทั้งหมดออกมาก่อน
 
     if (editingUser) {
-        //อัปเดตข้อมูลในตาราง Users ทั้งหมด
-      const updatedUsers = users.map((u) => 
-        // ค้นหาด้วย oldUsername แทน เพื่ออัปเดตทับข้อมูลก้อนเดิม
-        u.username === editingUser.oldUsername ? { ...editingUser } : u
-      );
-
-        // เอา oldUsername ออกก่อนบันทึกกลับลง State / LocalStorage
-      updatedUsers.forEach(u => delete u.oldUsername);
-      
-      setUsers(updatedUsers);
-
-        // เช็คว่าถ้าคนที่ถูกแก้คือ "ตัวเอง" (Admin ที่กำลังล็อกอินอยู่) ให้เปลี่ยน currentUser ด้วย
-      if (currentUser.username === editingUser.oldUsername) {
-        const updatedCurrentUser = { ...editingUser };
-        delete updatedCurrentUser.oldUsername; // ลบทิ้งก่อนเซ็ตลง State
-        setCurrentUser(updatedCurrentUser);
-      }
-      else{setEditingUser(null);}
       // โหมดแก้ไข (EDIT)
       if (editingUser.username !== username) {
         // ถ้ามีการ "เปลี่ยน Username" ต้องเช็คก่อนว่า Username ใหม่ซ้ำกับคนอื่นในระบบไหม
@@ -1671,10 +1653,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   };
 
   const handleEditClick = (user) => {
-    setEditingUser({ 
-    ...user, 
-    oldUsername: user.username 
-  });
+    setEditingUser(user);
     setError('');
     setSuccess('');
     setRevokeSuccess('');
