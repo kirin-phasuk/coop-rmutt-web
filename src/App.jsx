@@ -303,6 +303,7 @@ export default function App() {
       return null;
     }
   };
+  
   //Delete Fac&UniDocFile
   const handleDeleteFile = async (studentId, fileField, fileUrl) => {
     if (!window.confirm("Are you sure you want to permanently delete this attached document?")) return;
@@ -378,24 +379,66 @@ export default function App() {
   };
 
   const handleDeleteStudent = async (id) => {
-    if (window.confirm("Are you sure you want to completely delete this student's record? This action cannot be undone.")) {
-      try {
-        const response = await fetch('/api/students', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
-        });
-        
-        if(response.ok){
-        const filteredList = students.filter(s => s.id !== id);
-        setStudents(filteredList);
+    // แจ้งเตือนยืนยันก่อนทำการลบทั้งหมด
+  if (!window.confirm("Are you sure you want to completely delete this student's record and all associated files? This action cannot be undone.")) {
+    return; // ถ้ายกเลิก ให้หยุดการทำงานทันที
+  }
+
+  try {
+    // 🚀 1. ค้นหาข้อมูลนักศึกษาจาก id เพื่อดึง URL ของไฟล์ต่างๆ ออกมาเตรียมไว้
+    const studentToDelete = students.find(s => s.id === id);
+    
+    if (studentToDelete) {
+      // สร้าง Array เก็บ URL ของไฟล์ทั้ง 4 ชนิด
+      const filesToDelete = [
+        studentToDelete.projectPdfFileName,       // ไฟล์ Presentation
+        studentToDelete.projectReportFileName,    // ไฟล์ Full Report Book
+        studentToDelete.facultyScholarshipFileName, // ไฟล์ขอทุนคณะ
+        studentToDelete.uniScholarshipFileName      // ไฟล์ขอทุนมหาลัย
+      ];
+
+      // 🚀 2. วนลูปลบไฟล์ที่มีอยู่ใน Vercel Blob ผ่าน Proxy API
+      for (const fileUrl of filesToDelete) {
+        if (fileUrl) { // เช็คก่อนว่ามีไฟล์นี้เก็บไว้ไหม ถ้ามีค่อยยิงลบ
+          try {
+            // เรียกใช้ Proxy API สำหรับลบไฟล์
+            const deleteResponse = await fetch('/api/delete', {
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: fileUrl })
+            });
+            
+            if (!deleteResponse.ok) {
+              console.error(`Failed to delete file from cloud: ${fileUrl}`);
+            }
+          } catch (fileErr) {
+            console.error("Error deleting file:", fileErr);
+          }
         }
-      } catch (error) {
-        console.error("Error deleting document: ", error);
       }
     }
-  };
 
+    // 🚀 3. ลบ Record ข้อมูลนักศึกษาออกจาก Database
+    const response = await fetch('/api/students', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    
+    if (response.ok) {
+      // 4. อัปเดตข้อมูลใน UI (เอาคนที่ถูกลบออกจาก State)
+      const filteredList = students.filter(s => s.id !== id);
+      setStudents(filteredList);
+      alert("Record and files deleted successfully.");
+    } else {
+      throw new Error('Failed to delete student record from database');
+    }
+
+  } catch (error) {
+    console.error("Error deleting document: ", error);
+    alert("Error deleting record. Please check logs.");
+  }
+};
   // Update Status Handler
  const handleUpdateStatus = async(id, newStatus) => {
     try {
@@ -488,7 +531,7 @@ export default function App() {
 
         <div className="flex-1 overflow-auto p-4 md:p-8 print:p-0 print:overflow-visible print:block">
           {activeTab === 'dashboard' && <DashboardView students={students} />}
-          {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent} />}
+          {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent}/>}
           {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
           {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser} onDeleteFile={handleDeleteFile}/>}
           {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser}/>}
