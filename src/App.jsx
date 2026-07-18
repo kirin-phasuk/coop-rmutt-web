@@ -1060,8 +1060,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div><label className="block text-sm font-bold mb-1">Project Name</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="Enter Project Title" /></div>
               <div><label className="block text-sm font-bold mb-1">Project Description</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border rounded-md" placeholder="Briefly describe the project..." /></div>
               <div><label className="block text-sm font-bold mb-1">Website URL (Optional)</label><input type="url" name="projectWebsite" defaultValue={student.projectWebsite} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="https://..." /></div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 {/* ---------------- 1. Presentation File (PDF/PPT) ---------------- */}
                 <div className="flex flex-col gap-2">
                   <label className="block text-sm font-semibold text-purple-800">Presentation File (PDF/PPT)</label>
@@ -1128,7 +1126,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                   </div>
                 </div>
               </div>
-            </div>
 
             {/* Evaluation Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
