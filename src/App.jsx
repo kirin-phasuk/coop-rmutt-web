@@ -1596,21 +1596,25 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const newUsers = { ...users }; // ก๊อปปี้ข้อมูลทั้งหมดออกมาก่อน
 
     if (editingUser) {
-      // โหมดแก้ไข (EDIT)
-      if (editingUser.username !== username) {
-        // ถ้ามีการ "เปลี่ยน Username" ต้องเช็คก่อนว่า Username ใหม่ซ้ำกับคนอื่นในระบบไหม
-        if (newUsers[username]) {
-          setError('This new username already exists in the system.');
-          setSuccess('');
-          return;
-        }
-        // ลบ Key ชื่อเก่าทิ้ง เพื่อเตรียมใช้ชื่อใหม่
-        delete newUsers[editingUser.username];
-      }
+        // 1. อัปเดตข้อมูลในตาราง Users ทั้งหมด
+      const updatedUsers = users.map((u) => 
+        // 🚀 ค้นหาด้วย oldUsername แทน เพื่ออัปเดตทับข้อมูลก้อนเดิม
+        u.username === editingUser.oldUsername ? { ...editingUser } : u
+      );
       
-      // อัปเดตข้อมูลลงไป
-      newUsers[username] = { username, password, name, role, faculty};
-      setSuccess(`Account '${username}' has been successfully updated.`);
+      // เอา oldUsername ออกก่อนบันทึกกลับลง State / LocalStorage
+      updatedUsers.forEach(u => delete u.oldUsername);
+      
+      setUsers(updatedUsers);
+
+      // 2. 🚀 เช็คว่าถ้าคนที่ถูกแก้คือ "ตัวเอง" (Admin ที่กำลังล็อกอินอยู่) ให้เปลี่ยน currentUser ด้วย
+      if (currentUser.username === editingUser.oldUsername) {
+        const updatedCurrentUser = { ...editingUser };
+        delete updatedCurrentUser.oldUsername; // ลบทิ้งก่อนเซ็ตลง State
+        setCurrentUser(updatedCurrentUser);
+    }
+
+    setEditingUser(null);
 
     } else if(!editingUser){
       // โหมดสร้างใหม่ (ADD)
@@ -1653,7 +1657,10 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   };
 
   const handleEditClick = (user) => {
-    setEditingUser(user);
+    setEditingUser({ 
+    ...user, 
+    oldUsername: user.username 
+  });
     setError('');
     setSuccess('');
     setRevokeSuccess('');
