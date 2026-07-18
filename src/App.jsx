@@ -1126,10 +1126,22 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
 function ApprovalView({ students, onUpdateStatus , currentUser}) {
   const [filter, setFilter] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // กรองตามการจัดกลุ่มสถานะ
   const filteredStudents = students.filter(s => {
     if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = 
+      (s.firstName || '').toLowerCase().includes(searchLower) ||
+      (s.lastName || '').toLowerCase().includes(searchLower) ||
+      (s.company || '').toLowerCase().includes(searchLower) ||
+      (s.country || '').toLowerCase().includes(searchLower) ||
+      (s.position || '').toLowerCase().includes(searchLower);
+    
+    if (!matchesSearch) return false;
+    
     if (filter === 'ALL') return true;
     if (filter === 'ACTIVE') return ![STATUSES.COMPLETE, STATUSES.REJECT_FAC, STATUSES.REJECT_UNI, STATUSES.HOLD_FAC, STATUSES.HOLD_UNI ].includes(s.status);
     if (filter === 'HOLD') return [STATUSES.HOLD_FAC, STATUSES.HOLD_UNI].includes(s.status);
@@ -1140,16 +1152,29 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full max-w-6xl mx-auto">
-      <div className="p-4 md:p-6 border-b border-slate-200 flex flex-wrap gap-4 justify-between items-center bg-slate-50">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+      <div className="p-4 md:p-6 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between lg:items-center bg-slate-50">
+        <h3 className="font-semibold text-slate-800 flex items-center gap-2 shrink-0">
           <CheckSquare className="text-blue-600" /> Approval Queue
         </h3>
-        <div className="flex gap-2 w-full md:w-auto">
-          <button onClick={() => setFilter('ALL')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>All</button>
-          <button onClick={() => setFilter('ACTIVE')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'ACTIVE' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>Active</button>
-          <button onClick={() => setFilter('HOLD')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'HOLD' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>On Hold</button>
-          <button onClick={() => setFilter('RESOLVED')} className={`px-4 py-2 text-sm font-medium rounded-md border ${filter === 'RESOLVED' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>Resolved</button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search by name, organization..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
+            />
+          </div>
+        <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 shrink-0">
+          <button onClick={() => setFilter('ALL')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>All</button>
+          <button onClick={() => setFilter('ACTIVE')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'ACTIVE' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>Active</button>
+          <button onClick={() => setFilter('HOLD')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'HOLD' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>On Hold</button>
+          <button onClick={() => setFilter('RESOLVED')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'RESOLVED' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>Resolved</button>
         </div>
+      </div>
       </div>
       
       <div className="overflow-y-auto flex-1 p-4 md:p-6">
@@ -1254,6 +1279,13 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
               </div>
             );
           })}
+          {/* แสดงข้อความเมื่อไม่พบข้อมูลจากการค้นหา */}
+          {filteredStudents.length === 0 && (
+            <div className="text-center py-16 text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-300">
+              <Search size={48} className="mx-auto text-slate-300 mb-4" />
+              <p>No records match your search or selected criteria.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
