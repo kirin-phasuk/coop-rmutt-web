@@ -829,7 +829,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   );
 }
 
-function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser  }) {
+function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser ,onDeleteFile }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAction, setSubmitAction] = useState('update');
@@ -1048,11 +1048,35 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div>
                   <label className="block text-sm font-bold mb-2 text-purple-700">Presentation File (PDF/PPT)</label>
-                  {student.projectPdfFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> View File</a>}                  <input type="file" name="projectPdfFile" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                  {student.projectPdfFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> Attach File</a>}                  
+                  <input type="file" name="projectPdfFile" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                </div>
+                <div>
+                  {student.projectPdfFileName && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <a href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-purple-100"><Download size={14}/> View&Download File</a>
+                      {(isStudent || isAdmin) && (
+                        <button type="button" onClick={() => onDeleteFile(student.id, 'projectPdfFileName', student.projectPdfFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} />Delete File</button>
+                      )}
+                    </div>
+                  )}                  
+                  <input type="file" name="projectPdfFile" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold mb-2 text-purple-700">Full Report Book (PDF)</label>
-                {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> View Report</a>}                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 mb-2 font-medium hover:bg-purple-100"><Download size={14} className="inline"/> Attach Report File</a>}                  
+                <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
+                </div>
+                <div>
+                  {student.projectReportFileName && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 border border-purple-200 bg-purple-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-purple-100"><Download size={14}/> View&Download File</a>
+                      {(isStudent || isAdmin) && (
+                        <button type="button" onClick={() => onDeleteFile(student.id, 'projectReportFileName', student.projectReportFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} />Delete File</button>
+                      )}
+                    </div>
+                  )}                  
+                  <input type="file" name="projectReportFile" accept=".pdf" disabled={!isStudent && !isAdmin} className="w-full text-sm" />
                 </div>
               </div>
             </div>
