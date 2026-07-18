@@ -483,7 +483,7 @@ export default function App() {
           {activeTab === 'dashboard' && <DashboardView students={students} />}
           {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent} />}
           {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
-          {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
+          {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser} onDeleteFile={handleDeleteFile}/>}
           {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser}/>}
           {activeTab === 'users' && <UserManagementView users={users} setUsers={setUsers} currentUser={currentUser}/>}
           {activeTab === 'guide' && <GuideView />}
