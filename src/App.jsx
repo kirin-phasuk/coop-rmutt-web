@@ -1764,7 +1764,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   );
 }
 
-function GuideView() {
+function GuideView({ currentUser }) {
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <div className="flex items-center gap-3 mb-6 border-b pb-4">
@@ -1773,66 +1773,115 @@ function GuideView() {
       </div>
 
       <div className="space-y-8 text-slate-700">
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-500" /> 1. User Roles
-          </h3>
-          <ul className="list-disc list-inside space-y-2 ml-4">
-            <li><strong>Coordinator:</strong> Responsible for registering new student records and viewing the master data list.</li>
-            <li><strong>Administrator:</strong> Responsible for progressing, approving, or rejecting student requests, as well as managing user accounts.</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <PlusCircle className="w-5 h-5 text-emerald-500" /> 2. Data Entry (Coordinator Only)
-          </h3>
-          <ol className="list-decimal list-inside space-y-2 ml-4">
-            <li>Navigate to the <strong>"New Registration"</strong> menu on the sidebar.</li>
-            <li>Complete all required fields. Incomplete forms will trigger a validation error.</li>
-            <li>Click the <strong>"Save and Submit"</strong> button at the bottom of the form.</li>
-            <li>The initial status of a newly created record is always <Badge status={STATUSES.SUBMITTED} />.</li>
-          </ol>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <CheckSquare className="w-5 h-5 text-orange-500" /> 3. Approval Workflow (Administrator Only)
-          </h3>
-          <p className="mb-2 ml-4">The approval process consists of two primary stages:</p>
-          <ol className="list-decimal list-inside space-y-3 ml-4">
-            <li>
-              <strong>Acceptance Stage:</strong> Newly submitted requests are marked as "Submitted". The administrator must click <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded border border-blue-200">Accept for In Progress</span> to advance the status.
-            </li>
-            <li>
-              <strong>Decision Stage:</strong> Once In Progress, the administrator can select from three actions:
-              <div className="mt-2 ml-6 flex flex-wrap gap-2">
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded border border-green-200">Approve</span>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded border border-yellow-200">Put on Hold</span>
-                <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded border border-red-200">Reject</span>
-              </div>
-            </li>
-            <li>Administrators may revert a processed decision by clicking <strong>"Revert to In Progress"</strong>.</li>
-          </ol>
-        </section>
-
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <UserCog className="w-5 h-5 text-purple-500" /> 4. User Account Management (Administrator Only)
-          </h3>
-          <p className="ml-4">
-            Administrators are authorized to create new accounts for both Coordinator and Administrators via the "User Management" tab. Furthermore, they can revoke existing Coordinator accounts (Revocation of other Administrators is strictly prohibited).
-          </p>
-        </section>
         
-        <section>
-          <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-indigo-500" /> 5. Viewing All Records
-          </h3>
-          <p className="ml-4">
-            All authorized personnel can access the <strong>"Spreadsheet"</strong> to view comprehensive student data in a spreadsheet format, facilitating efficient auditing and data export.
+        {/* Main Description */}
+        <section className="bg-blue-50 p-5 rounded-lg border border-blue-100">
+          <p className="text-slate-800 leading-relaxed font-medium text-sm md:text-base">
+            This website is designed to record and manage the cooperative education scholarship request process, 
+            as well as facilitate the submission and evaluation of projects for students participating in 
+            international cooperative education programs.
           </p>
         </section>
+
+        {/* Roles Description */}
+        <section>
+          <h3 className="text-lg font-semibold text-slate-900 mb-5 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-500" /> User Roles & Responsibilities
+          </h3>
+          <div className="space-y-5 ml-2">
+            
+            {/* 1. Student */}
+            <div className="border-l-4 border-orange-400 pl-4 py-1">
+              <h4 className="font-bold text-slate-800">1. Student</h4>
+              <p className="text-sm mt-1.5 leading-relaxed text-slate-600">
+                Responsible for creating their own record via the <strong>"New Registration"</strong> page. Students must completely fill in the required information for the scholarship request and subsequently contact the faculty coordinator. Once the scholarship request and the international internship are completed, a project submission section will become available. Students must complete this project form, which will then be evaluated by the advisors.
+              </p>
+            </div>
+            
+            {/* 2. Faculty Coordinator */}
+            <div className="border-l-4 border-blue-500 pl-4 py-1">
+              <h4 className="font-bold text-slate-800">2. Faculty Coordinator</h4>
+              <p className="text-sm mt-1.5 leading-relaxed text-slate-600">
+                Responsible for managing and editing student data, compiling required documents into files, updating the status of the faculty scholarship process, and evaluating the student's final project.
+              </p>
+            </div>
+
+            {/* 3. University Coordinator */}
+            <div className="border-l-4 border-emerald-500 pl-4 py-1">
+              <h4 className="font-bold text-slate-800">3. University Coordinator</h4>
+              <p className="text-sm mt-1.5 leading-relaxed text-slate-600">
+                Responsible for collecting and managing documents for the university scholarship, updating the status of the university scholarship process until completion, and evaluating the student's final project.
+              </p>
+            </div>
+
+            {/* 4. Admin */}
+            <div className="border-l-4 border-purple-500 pl-4 py-1">
+              <h4 className="font-bold text-slate-800">4. Administrator (Admin)</h4>
+              <p className="text-sm mt-1.5 leading-relaxed text-slate-600">
+                Responsible for overseeing the entire system, managing processes, coordinating workflows, and has the authority to edit all information related to the cooperative education program.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Admin Only: Process Statuses */}
+        {currentUser?.role === 'admin' && (
+          <section className="bg-slate-900 text-slate-300 p-6 md:p-8 rounded-xl shadow-inner mt-8 border border-slate-800">
+            <div className="mb-6 border-b border-slate-700 pb-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <CheckSquare className="w-5 h-5 text-purple-400" /> System Process Statuses (Admin Only)
+              </h3>
+              <p className="text-sm mt-2 text-slate-400">Detailed explanation of the workflow statuses within the Approval Queue.</p>
+            </div>
+            
+            <ul className="space-y-4 text-sm">
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.SUBMITTED} /></div>
+                <span className="text-slate-300">Initial state when a student successfully registers. Awaits the Faculty Coordinator or Admin to begin the review.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.IN_PROG_FAC} /></div>
+                <span className="text-slate-300">Faculty is currently reviewing the scholarship request and documentation.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.HOLD_FAC} /></div>
+                <span className="text-slate-300">Issue identified with faculty documents or data. Waiting for corrections or updates.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.APP_FAC} /></div>
+                <span className="text-slate-300">Faculty scholarship has been officially approved. Ready to proceed to the University level.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.IN_PROG_UNI} /></div>
+                <span className="text-slate-300">University is actively reviewing the scholarship request.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.HOLD_UNI} /></div>
+                <span className="text-slate-300">Issue identified with university documents. Waiting for corrections.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.APP_UNI} /></div>
+                <span className="text-slate-300">University scholarship has been officially approved.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.COMPLETE} /></div>
+                <span className="text-slate-300">Scholarship process is entirely finished. The system now waits for the student to return and submit their project.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.PROJ_SUBMITTED} /></div>
+                <span className="text-slate-300">Student has uploaded the required presentation and report. Awaiting final grading (Faculty & University evaluation).</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.PROJ_FINISHED} /></div>
+                <span className="text-slate-300">Both faculty and university advisors have graded the project. This is the end of the student workflow.</span>
+              </li>
+              <li className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 mt-6 pt-4 border-t border-slate-700">
+                <div className="w-48 shrink-0"><Badge status={STATUSES.REJECT_FAC} /> <span className="mx-2 text-slate-500">or</span> <Badge status={STATUSES.REJECT_UNI} /></div>
+                <span className="text-slate-300">Request denied at either the Faculty or University level. The process is terminated.</span>
+              </li>
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );
