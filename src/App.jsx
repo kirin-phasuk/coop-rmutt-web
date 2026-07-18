@@ -246,6 +246,8 @@ export default function App() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
+  const studentHasRecord = currentUser?.role === 'student' && students.some(s => s.createdBy === currentUser?.username);
+
   useEffect(() => { localStorage.setItem('mock_users', JSON.stringify(users)); }, [users]);
   useEffect(() => {
     const fetchStudents = async () => {
@@ -329,6 +331,11 @@ export default function App() {
   };
   // Create Record Handler
    const handleAddStudent = async (studentData) => {
+    if (currentUser?.role === 'student' && studentHasRecord) {
+      alert("You have already submitted a registration record. Only one record is allowed per student.");
+      setActiveTab('list');
+      return;
+    }
     try {
       const newStudent = {
         ...studentData,
@@ -438,7 +445,7 @@ export default function App() {
             active={activeTab === 'list'} onClick={() => {setActiveTab('list'); setEditingStudent(null); }} 
           />
 
-          {['admin', 'facultyCoordinator', 'student'].includes(currentUser.role) && (
+          {(['admin', 'facultyCoordinator'].includes(currentUser.role) || (currentUser.role === 'student' && !studentHasRecord)) && (
             <NavItem icon={<PlusCircle size={20} />} label="New Registration" active={activeTab === 'entry'} onClick={() => {setActiveTab('entry'); setEditingStudent(null); }} />
           )}
 
