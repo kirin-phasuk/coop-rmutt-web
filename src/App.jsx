@@ -1090,7 +1090,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                         <Download size={16} /> View & Download File
                       </a>
                     )}
-                  {(isStudent || isAdmin) && (
+                  {(isStudent || isAdmin) && student.projectPdfFileName &&  (
                         <button type="button" onClick={() => onDeleteFile(student.id, 'projectPdfFileName', student.projectPdfFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
                   )}
                   </div>
@@ -1101,11 +1101,11 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                   <label className="block text-sm font-semibold text-purple-800">Full Report Book (PDF)</label>
                   
                   <div className="flex flex-wrap items-center gap-4">
-                    {/* 🚀 ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
+                    {/*  ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
                     {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
                       <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
                         <Upload size={16} /> Attach Report File
-                        {/* 🚀 ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
+                        {/*ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
                         <input 
                           type="file" 
                           name="projectReportFile" 
@@ -1126,7 +1126,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                         <Download size={16} /> View & Download File
                       </a>
                     )}
-                    {(isStudent || isAdmin) && (
+                    {(isStudent || isAdmin) && student.projectReportFileName&& (
                         <button type="button" onClick={() => onDeleteFile(student.id, 'projectReportFileName', student.projectReportFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
                     )}
                   </div>
