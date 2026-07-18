@@ -493,7 +493,7 @@ export default function App() {
           {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser} onDeleteFile={handleDeleteFile}/>}
           {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser}/>}
           {activeTab === 'users' && <UserManagementView users={users} setUsers={setUsers} currentUser={currentUser}/>}
-          {activeTab === 'guide' && <GuideView />}
+          {activeTab === 'guide' && <GuideView currentUser={currentUser} />}
         </div>
       </main>
     </div>
