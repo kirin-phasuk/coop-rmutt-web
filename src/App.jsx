@@ -304,55 +304,29 @@ export default function App() {
     }
   };
   //Delete Fac&UniDocFile
-  const handleDeleteStudent = async (id) => {
-    if (window.confirm("Are you sure you want to completely delete this student's record and all associated files? This action cannot be undone.")) {
-      try {
-        // 🚀 1. หาข้อมูลนักศึกษาคนที่จะลบจาก State เพื่อเอา URL ไฟล์มาเตรียมลบ
-        const studentToDelete = students.find(s => s.id === id);
-        
-        if (studentToDelete) {
-          // 🚀 2. รวบรวมตัวแปรไฟล์ทั้ง 4 ชนิด
-          const filesToDelete = [
-            studentToDelete.facultyScholarshipFileName, // ไฟล์ขอทุนคณะ
-            studentToDelete.uniScholarshipFileName,     // ไฟล์ขอทุนมหาลัย
-            studentToDelete.projectPdfFileName,         // ไฟล์พรีเซนต์โปรเจค
-            studentToDelete.projectReportFileName       // ไฟล์รูปเล่มโปรเจค
-          ];
+  const handleDeleteFile = async (studentId, fileField, fileUrl) => {
+    if (!window.confirm("Are you sure you want to permanently delete this attached document?")) return;
+    
+    try {
+      // 1. เรียก API ลบไฟล์ใน Storage
+      const response = await fetch('/api/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: fileUrl })
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete file from cloud');
 
-          // 🚀 3. วนลูปลบไฟล์ที่มีอยู่ใน Vercel Blob ผ่าน Proxy API /api/delete
-          for (const fileUrl of filesToDelete) {
-            if (fileUrl) { // เช็คก่อนว่ามีไฟล์นี้อัปโหลดไว้หรือไม่
-              try {
-                await fetch('/api/delete', {
-                  method: 'POST', 
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ url: fileUrl })
-                });
-                console.log(`Deleted file: ${fileUrl}`);
-              } catch (fileErr) {
-                console.error(`Failed to delete file: ${fileUrl}`, fileErr);
-              }
-            }
-          }
-        }
+      // 2. ลบชื่อไฟล์ออกจากฐานข้อมูล
+      await handleUpdateStudent(studentId, { [fileField]: null });
+      
+      // 3. อัปเดตข้อมูลใน UI หน้า Edit (เพื่อให้ปุ่มลบหายไปทันที)
+      setEditingStudent(prev => ({ ...prev, [fileField]: null }));
 
-        // 🚀 4. ลบ Record ข้อมูลออกจาก Database (โค้ดเดิม)
-        const response = await fetch('/api/students', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
-        });
-        
-        if(response.ok){
-          const filteredList = students.filter(s => s.id !== id);
-          setStudents(filteredList);
-          // (Optional) เพิ่มแจ้งเตือนเมื่อลบเสร็จสมบูรณ์
-          // alert("Record and all associated files have been permanently deleted.");
-        }
-      } catch (error) {
-        console.error("Error deleting document: ", error);
-        alert("An error occurred while deleting the record.");
-      }
+      alert("File deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      alert("Error deleting file. Please check logs.");
     }
   };
   // Create Record Handler
