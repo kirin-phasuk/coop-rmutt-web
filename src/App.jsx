@@ -1861,6 +1861,7 @@ function GuideView({ currentUser }) {
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <CheckSquare className="w-5 h-5 text-purple-400" /> System Process Statuses (Admin Only)
               </h3>
+              <p className="text-sm mt-2 text-red-400">***Don't change the UserName of Admin Cause that is primary key of User***</p>
               <p className="text-sm mt-2 text-slate-400">Detailed explanation of the workflow statuses within the Approval Queue.</p>
             </div>
             
