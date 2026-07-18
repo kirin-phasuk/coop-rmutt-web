@@ -1090,6 +1090,9 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                         <Download size={16} /> View & Download File
                       </a>
                     )}
+                  {(isStudent || isAdmin) && (
+                        <button type="button" onClick={() => onDeleteFile(student.id, 'projectPdfFileName', student.projectPdfFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
+                  )}
                   </div>
                 </div>
 
@@ -1122,6 +1125,9 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                       >
                         <Download size={16} /> View & Download File
                       </a>
+                    )}
+                    {(isStudent || isAdmin) && (
+                        <button type="button" onClick={() => onDeleteFile(student.id, 'projectReportFileName', student.projectReportFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
                     )}
                   </div>
                 </div>
