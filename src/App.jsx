@@ -861,6 +861,15 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
+    // FIX: เติมข้อมูลที่หายไปจากการถูก Disabled
+    // ฟิลด์ไหนที่ถูก disabled ไว้ใน UI มันจะไม่ถูกส่งมาใน FormData
+    // เราจึงต้องเอาค่าเดิมจาก prop 'student' มาใส่กลับเข้าไป เพื่อให้ผ่าน Required Fields Validation
+    Object.keys(student).forEach(key => {
+      if (data[key] === undefined) {
+        data[key] = student[key];
+      }
+    });
+
     const facFile = formData.get('facultyScholarshipFile');
     const uniFile = formData.get('uniScholarshipFile');
     const projPdf = formData.get('projectPdfFile');
