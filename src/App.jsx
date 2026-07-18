@@ -301,7 +301,32 @@ export default function App() {
       return null;
     }
   };
+  //Delete Fac&UniDocFile
+  const handleDeleteFile = async (studentId, fileField, fileUrl) => {
+    if (!window.confirm("Are you sure you want to permanently delete this attached document?")) return;
+    
+    try {
+      // 1. เรียก API ลบไฟล์ใน Storage
+      const response = await fetch('/api/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: fileUrl })
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete file from cloud');
 
+      // 2. ลบชื่อไฟล์ออกจากฐานข้อมูล
+      await handleUpdateStudent(studentId, { [fileField]: null });
+      
+      // 3. อัปเดตข้อมูลใน UI หน้า Edit (เพื่อให้ปุ่มลบหายไปทันที)
+      setEditingStudent(prev => ({ ...prev, [fileField]: null }));
+
+      alert("File deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      alert("Error deleting file. Please check logs.");
+    }
+  };
   // Create Record Handler
    const handleAddStudent = async (studentData) => {
     try {
@@ -965,6 +990,14 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                    {student.facultyScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}  target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
                    <input type="file" name="facultyScholarshipFile" accept=".pdf" disabled={isStudent || isUni} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
                  </div>
+                 {student.facultyScholarshipFileName && (
+                     <div className="flex items-center gap-2 mb-2">
+                       <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-blue-100"><Download size={14}/> Download File</a>
+                       {canEditFacEval && (
+                         <button type="button" onClick={() => onDeleteFile(student.id, 'facultyScholarshipFileName', student.facultyScholarshipFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
+                       )}
+                     </div>
+                   )}
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
                    <input type="number" name="facultyScholarshipAmount" defaultValue={student.facultyScholarshipAmount} disabled={isStudent || isUni}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
@@ -983,6 +1016,14 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                     {student.uniScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
                     <input type="file" name="uniScholarshipFile" accept=".pdf" disabled={isStudent || isFac} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
                  </div>
+                 {student.uniScholarshipFileName && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-emerald-100"><Download size={14}/> Download File</a>
+                        {canEditUniEval && (
+                          <button type="button" onClick={() => onDeleteFile(student.id, 'uniScholarshipFileName', student.uniScholarshipFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
+                        )}
+                      </div>
+                    )}
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
                    <input type="number" name="uniScholarshipAmount" defaultValue={student.uniScholarshipAmount} disabled={isStudent || isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
