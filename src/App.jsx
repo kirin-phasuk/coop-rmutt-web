@@ -4,7 +4,7 @@ import {
   Clock, CheckCircle2, AlertCircle, Building, GraduationCap, Plane, Save, 
   Navigation, Globe2, MapPin, Map, BookOpen, UserPlus, UserCog, Trash2, 
   Printer, Search, Filter, Edit, X, FileText, Banknote, Paperclip, ArrowLeftCircle,
-  ArrowRightCircle, XCircle,Download,Star, MessageSquare,
+  ArrowRightCircle, XCircle,Download,Star, MessageSquare,Upload
 } from 'lucide-react';
 
 // --- Constants & Config ---
@@ -1062,69 +1062,71 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div><label className="block text-sm font-bold mb-1">Website URL (Optional)</label><input type="url" name="projectWebsite" defaultValue={student.projectWebsite} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="https://..." /></div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div>
-                  <div className="flex flex-col gap-2">
-                    <label className="block text-sm font-semibold text-purple-800">Presentation File (PDF/PPT)</label>
-                    
-                    <div className="flex flex-wrap items-center gap-4">
-                      {/* 🚀 ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
-                      {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
-                        <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
-                          <Upload size={16} /> Attach File
-                          {/* 🚀 ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
-                          <input 
-                            type="file" 
-                            name="projectPdfFile" 
-                            className="hidden" 
-                            accept=".pdf,.ppt,.pptx" 
-                          />
-                        </label>
-                      )}
+                {/* ---------------- 1. Presentation File (PDF/PPT) ---------------- */}
+                <div className="flex flex-col gap-2">
+                  <label className="block text-sm font-semibold text-purple-800">Presentation File (PDF/PPT)</label>
+                  
+                  <div className="flex flex-wrap items-center gap-4">
+                    {/* 🚀 ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
+                    {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
+                      <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
+                        <Upload size={16} /> Attach File
+                        {/* 🚀 ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
+                        <input 
+                          type="file" 
+                          name="projectPdfFile" 
+                          className="hidden" 
+                          accept=".pdf,.ppt,.pptx" 
+                        />
+                      </label>
+                    )}
 
-                      {/* ปุ่ม View & Download แสดงเสมอถ้ามีไฟล์อัปโหลดไว้แล้ว */}
-                      {student.projectPdfFileName && (
-                        <a 
-                          href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
-                        >
-                          <Download size={16} /> View & Download File
-                        </a>
-                      )}
-                    </div>
+                    {/* ปุ่ม View & Download แสดงเสมอถ้ามีไฟล์อัปโหลดไว้แล้ว */}
+                    {student.projectPdfFileName && (
+                      <a 
+                        href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
+                      >
+                        <Download size={16} /> View & Download File
+                      </a>
+                    )}
                   </div>
                 </div>
-                  <div className="flex flex-col gap-2 mt-4">
-                    <label className="block text-sm font-semibold text-purple-800">Full Report Book (PDF)</label>
-                    <div className="flex flex-wrap items-center gap-4">
-                      {/* 🚀 ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
-                      {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
-                        <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
-                          <Upload size={16} /> Attach Report File
-                          {/* 🚀 ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
-                          <input 
-                            type="file" 
-                            name="projectReportFile" 
-                            className="hidden" 
-                            accept=".pdf" 
-                          />
-                        </label>
-                      )}
 
-                      {/* ปุ่ม View & Download แสดงเสมอถ้ามีไฟล์อัปโหลดไว้แล้ว */}
-                      {student.projectReportFileName && (
-                        <a 
-                          href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
-                        >
-                          <Download size={16} /> View & Download File
-                        </a>
-                      )}
-                    </div>
+                {/* ---------------- 2. Full Report Book (PDF) ---------------- */}
+                <div className="flex flex-col gap-2 mt-4">
+                  <label className="block text-sm font-semibold text-purple-800">Full Report Book (PDF)</label>
+                  
+                  <div className="flex flex-wrap items-center gap-4">
+                    {/* 🚀 ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
+                    {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
+                      <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
+                        <Upload size={16} /> Attach Report File
+                        {/* 🚀 ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
+                        <input 
+                          type="file" 
+                          name="projectReportFile" 
+                          className="hidden" 
+                          accept=".pdf" 
+                        />
+                      </label>
+                    )}
+
+                    {/* ปุ่ม View & Download แสดงเสมอถ้ามีไฟล์อัปโหลดไว้แล้ว */}
+                    {student.projectReportFileName && (
+                      <a 
+                        href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
+                      >
+                        <Download size={16} /> View & Download File
+                      </a>
+                    )}
                   </div>
+                </div>
               </div>
             </div>
 
