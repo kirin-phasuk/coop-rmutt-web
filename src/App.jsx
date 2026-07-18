@@ -482,7 +482,7 @@ export default function App() {
             {activeTab === 'approval' && 'Approval Management System'}
             {activeTab === 'users' && 'User Account Management'}
             {activeTab === 'edit' && 'Edit Student Record'}
-            {activeTab === 'guide' && 'System User Guide'}
+            {activeTab === 'guide' && 'User Guide'}
           </h2>
         </header>
 
