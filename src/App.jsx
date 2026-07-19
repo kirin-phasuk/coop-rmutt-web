@@ -1662,9 +1662,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       newUsers[username] = { username, password, name, role, faculty};
       setSuccess(`Account '${username}' has been successfully updated.`);
 
-    } else if(!editingUser){
+    } else{
       // โหมดสร้างใหม่ (ADD)
-      if (users[username]) {
+      if (newUsers[username]) {
         setError('This username already exists in the system.');
         setSuccess('');
         return;
@@ -1673,10 +1673,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       setSuccess(`Account successfully created for ${role}.`);
     }
 
-    setUsers({
-      ...users,
-      [username]: { username, password, name, role, faculty}
-    });
+    setUsers(newUsers);
     setEditingUser(null);
     setError('');
     setRevokeSuccess('');
