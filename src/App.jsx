@@ -378,6 +378,54 @@ export default function App() {
     } catch (error) { console.error(error); }
   };
 
+  // Assign Student to Record
+  const handleAssignStudent = async (recordId, currentCreatedBy) => {
+    // ดึงข้อมูล User ปัจจุบันที่เป็นคนสร้าง (เพื่อดูว่าใช่นักศึกษาไหม ถ้าใช่ให้แสดงชื่อเดิมในช่องกรอก)
+    const currentOwner = users[currentCreatedBy]?.role === 'student' ? currentCreatedBy : '';
+    
+    const usernameInput = window.prompt("Enter Student Username to grant access (Leave blank to remove access):", currentOwner);
+    
+    if (usernameInput === null) return; // กดยกเลิก
+    const username = usernameInput.trim();
+
+    // กรณีลบข้อความจนว่างเปล่า = ถอดสิทธิ์นักศึกษาออก แล้วคืนสิทธิ์ความเป็นเจ้าของให้คนกด
+    if (username === "") {
+      if (window.confirm("Are you sure you want to remove the assigned student?")) {
+         await handleUpdateStudent(recordId, { createdBy: currentUser.username });
+         alert("Student access removed successfully.");
+      }
+      return;
+    }
+
+    // ตรวจสอบว่ามี User นี้ในระบบหรือไม่
+    const targetUser = users[username];
+    if (!targetUser) {
+      alert(`Error: User '${username}' not found in the system.`);
+      return;
+    }
+    // ตรวจสอบว่าเป็นสิทธิ์ Student หรือไม่
+    if (targetUser.role !== 'student') {
+      alert(`Error: User '${username}' is a ${targetUser.role}. Access can only be granted to 'student' roles.`);
+      return;
+    }
+
+    // ตรวจสอบกฎ: 1 Student ต่อ 1 Record
+    const existingRecord = students.find(s => s.createdBy === username && s.id !== recordId);
+    if (existingRecord) {
+      alert(`Error: Student '${username}' already has access to another record.`);
+      return;
+    }
+
+    // บันทึกสิทธิ์ (เขียนทับลงใน createdBy)
+    try {
+      await handleUpdateStudent(recordId, { createdBy: username });
+      alert(`Successfully granted access to student: ${username}`);
+    } catch (error) {
+      console.error("Assign Error:", error);
+      alert("Failed to assign student.");
+    }
+  };
+
   const handleDeleteStudent = async (id) => {
     // แจ้งเตือนยืนยันก่อนทำการลบทั้งหมด
   if (!window.confirm("Are you sure you want to completely delete this student's record and all associated files? This action cannot be undone.")) {
@@ -534,7 +582,7 @@ export default function App() {
           {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent}/>}
           {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
           {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser} onDeleteFile={handleDeleteFile}/>}
-          {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser}/>}
+          {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser} onAssignStudent={handleAssignStudent} users={users}/>}
           {activeTab === 'users' && <UserManagementView users={users} setUsers={setUsers} currentUser={currentUser}/>}
           {activeTab === 'guide' && <GuideView currentUser={currentUser} />}
         </div>
@@ -1219,7 +1267,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   );
 }
 
-function ApprovalView({ students, onUpdateStatus , currentUser}) {
+function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent, users}) {
   const [filter, setFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -1317,6 +1365,21 @@ function ApprovalView({ students, onUpdateStatus , currentUser}) {
               {/* Action Buttons based on Workflow */}
               <div className="flex flex-col gap-2 w-full lg:w-48 lg:shrink-0">
                 
+                {/* ปุ่มมอบสิทธิ์ให้นักศึกษา (Assign Student) */}
+                {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser?.role) && (
+                  <button 
+                    onClick={() => onAssignStudent(student.id, student.createdBy)}
+                    className={`w-full px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-center gap-1 border mb-2 ${
+                      isAssignedToStudent 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' // สีเขียวถ้ามีการมอบสิทธิ์แล้ว
+                        : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'     // สีม่วงถ้ายังเป็นของ Staff
+                    }`}
+                  >
+                    <UserPlus size={14} /> 
+                    {isAssignedToStudent ? `Assigned: ${student.createdBy}` : 'Assign to Student'}
+                  </button>
+                )}
+
                 {availableActions.length > 0 && (
                   <div className="flex flex-col gap-2">
                   {availableActions.map(action => (
