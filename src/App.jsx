@@ -1077,7 +1077,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                  </div>
                  {student.uniScholarshipFileName && (
                       <div className="flex items-center gap-2 mb-2">
-                        <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-emerald-100"><Download size={14}/> Download File</a>
+                        <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-blue-100"><Download size={14}/> Download File</a>
                         {canEditUniEval && (
                           <button type="button" onClick={() => onDeleteFile(student.id, 'uniScholarshipFileName', student.uniScholarshipFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
                         )}
@@ -1627,6 +1627,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSaveUser = (e) => {
     e.preventDefault();
@@ -1708,6 +1709,16 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     setRevokeSuccess('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  //สร้างตัวแปรเก็บข้อมูล User ที่ผ่านการกรองแล้ว
+  const filteredUsers = Object.values(users).filter(user => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(searchLower) ||
+      user.username.toLowerCase().includes(searchLower) ||
+      user.role.toLowerCase().includes(searchLower) ||
+      (user.faculty || '').toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -1786,10 +1797,20 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <h3 className="font-semibold text-slate-800 flex items-center gap-2">
             <Users className="text-emerald-600" /> Registered Users
           </h3>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search by name, username, role..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors bg-white"
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
@@ -1803,7 +1824,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {Object.values(users).map(user => (
+              {filteredUsers.map(user => (
                 <tr key={user.username} className={`transition-colors ${editingUser?.username === user.username ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
                   <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
                   <td className="px-6 py-4">{user.username}</td>
@@ -1835,6 +1856,14 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                   </td>
                 </tr>
               ))}
+              {/* กรณีค้นหาแล้วไม่เจอข้อมูล ให้แสดงข้อความแจ้งเตือน */}
+              {filteredUsers.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="px-6 py-8 text-center text-slate-500 bg-slate-50">
+                    No users found matching "{searchTerm}"
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
