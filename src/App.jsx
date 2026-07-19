@@ -1328,6 +1328,9 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
             const canRevert = currentUser?.role === 'admin' ||
               (currentUser?.role === 'facultyCoordinator' && [STATUSES.IN_PROG_FAC, STATUSES.HOLD_FAC, STATUSES.REJECT_FAC, STATUSES.APP_FAC].includes(student.status)) ||
               (currentUser?.role === 'universityCoordinator' && [STATUSES.IN_PROG_UNI, STATUSES.HOLD_UNI, STATUSES.REJECT_UNI, STATUSES.APP_UNI].includes(student.status));
+            const createdByUser = users[student.createdBy];
+            const isAssignedToStudent = createdByUser && createdByUser.role === 'student';
+          
           return(
             <div key={student.id} className={`border rounded-lg p-5 flex flex-col lg:flex-row gap-6 justify-between ${student.status === STATUSES.COMPLETE ? 'border-purple-300 bg-purple-50/20' : 'border-slate-200 bg-white'}`}>
               <div className="flex-1 w-full">
