@@ -566,7 +566,7 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 print:overflow-visible print:block">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center px-8 shadow-sm flex-shrink-0 print:hidden">
-          <h2 className="text-xl font-semibold text-slate-800 truncate">
+          <h1 className="text-xl font-bold text-slate-800 truncate">
             {activeTab === 'dashboard' && 'Dashboard Overview'}
             {activeTab === 'list' && 'Spreadsheet : Student Records'}
             {activeTab === 'entry' && 'Student Registration Form'}
@@ -574,7 +574,7 @@ export default function App() {
             {activeTab === 'users' && 'User Account Management'}
             {activeTab === 'edit' && 'Edit Student Record'}
             {activeTab === 'guide' && 'User Guide'}
-          </h2>
+          </h1>
         </header>
 
         <div className="flex-1 overflow-auto p-4 md:p-8 print:p-0 print:overflow-visible print:block">
@@ -626,7 +626,7 @@ function DashboardView({ students }) {
   }, [students, selectedZone]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-full mx-auto space-y-6">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <StatCard title="Total Records" value={stats.total} icon={<Users />} gradient="from-slate-500 to-slate-600" />
@@ -803,7 +803,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-      <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+      <h3 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
         <PlusCircle className="text-blue-500" /> Create New Record
       </h3>
 
@@ -826,50 +826,54 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
         {/* Section 1: Personal Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Prefix</label><select name="prefix" className="w-full px-3 py-2 border rounded-md" required><option value="">Select...</option><option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option></select></div>
-            <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Faculty</label>
-              <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" required disabled={currentUser.role === 'facultyCoordinator'} defaultValue={currentUser.role === 'facultyCoordinator' ? currentUser.faculty : ''}>
-                <option value="">Select Faculty...</option>
-                {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
+          <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div><label className="block text-sm font-medium mb-1">Prefix</label><select name="prefix" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required><option value="">Select...</option><option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option></select></div>
+              <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Faculty</label>
+                <select name="faculty" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required disabled={currentUser.role === 'facultyCoordinator'} defaultValue={currentUser.role === 'facultyCoordinator' ? currentUser.faculty : ''}>
+                  <option value="">Select Faculty...</option>
+                  {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Section 2: Organization Data */}
-        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+        <div className="bg-[#f8fafc] p-6 rounded-lg border border-slate-100">
+          <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+          <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" className="w-full px-3 py-2 border rounded-md" required/></div>
+            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
             <div>
               <label className="block text-sm font-medium mb-1">Country *</label>
-              <select name="country" className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 bg-white" required>
+              <select name="country" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required>
                 <option value="">Select Country...</option>
                 {COUNTRIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>          
-            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
-            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
+            </div>
           </div>
         </div>
 
         {/* Section 3: Schedule */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Departure Date</label><input type="date" name="departureDate" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship Start Date</label><input type="date" name="startDate" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship End Date</label><input type="date" name="endDate" className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Return Date</label><input type="date" name="returnDate" className="w-full px-3 py-2 border rounded-md" /></div>
-          </div>
+            <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
+                <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Departure Date</label><input type="date" name="departureDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">Internship Start Date</label><input type="date" name="startDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">Internship End Date</label><input type="date" name="endDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">Return Date</label><input type="date" name="returnDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            </div>
           </div>
         </div>
 
@@ -923,6 +927,241 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function StudentListView({ students , currentUser, onEdit , onDelete}) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [yearFilter, setYearFilter] = useState('ALL');
+
+  // Derive unique years dynamically for the filter dropdown
+  const availableYears = useMemo(() => {
+    const years = new Set(students.map(s => s.year));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [students]);
+
+  // Apply search and filters
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
+      if (currentUser.role === 'student' && s.createdBy !== currentUser.username) return false;
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        s.firstName.toLowerCase().includes(searchLower) ||
+        s.lastName.toLowerCase().includes(searchLower) ||
+        s.company.toLowerCase().includes(searchLower) ||
+        s.country.toLowerCase().includes(searchLower) ||
+        s.position.toLowerCase().includes(searchLower);
+      
+      const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+      const matchesYear = yearFilter === 'ALL' || s.year.toString() === yearFilter.toString();
+
+      return matchesSearch && matchesStatus && matchesYear;
+    });
+  }, [students, currentUser, searchTerm, statusFilter, yearFilter ]);
+
+  const handleExportExcel = () => {
+    // 1. เตรียมหัวตาราง
+    const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
+      'Faculty','Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
+      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)', 'Project Score'];
+    
+    // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
+    const rows = filteredStudents.map(s => [
+      s.status, 
+      s.prefix, 
+      s.firstName, 
+      s.lastName, 
+      s.gpax, 
+      s.engTest, 
+      `"${s.faculty || '-'}"`, 
+      `"${s.company || ''}"`, 
+      `"${s.country || ''}"`, 
+      `"${s.position|| ''}"`, 
+      s.year, 
+      s.semester, 
+      new Date(s.departureDate).toLocaleDateString('en-US'),
+      new Date(s.startDate).toLocaleDateString('en-US'),
+      new Date(s.endDate).toLocaleDateString('en-US'),
+      new Date(s.returnDate).toLocaleDateString('en-US'),
+      s.facultyScholarshipAmount || '0',
+      s.uniScholarshipAmount || '0',
+     (s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : ''
+    ]);
+
+    // รวมเป็นข้อความ CSV
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    // สร้างไฟล์แล้วสั่งดาวน์โหลดอัตโนมัติ (ใส่ BOM \uFEFF เพื่อให้ Excel อ่านภาษาไทย/UTF-8 ได้ถูกต้อง)
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Student_Records_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:overflow-visible">
+      <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-4 print:hidden">
+        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+          <FileSpreadsheet className="text-emerald-600" /> Spreadsheet: Student Records
+        </h3>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">Total {filteredStudents.length} records</span>
+          <button onClick={handleExportExcel} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Printer size={16} /> Export to Export Excel
+          </button>
+          <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+            <Printer size={16} /> Export to PDF
+          </button>
+        </div>
+      </div>
+      
+      {/* Search and Filter Controls */}
+      <div className="p-4 border-b border-slate-200 bg-white flex flex-col lg:flex-row gap-4 print:hidden">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search by name, organization, country, position..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
+          />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+            <Filter className="text-slate-500" size={16} />
+            <select 
+              value={statusFilter} 
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="ALL">All Statuses</option>
+              {Object.values(STATUSES).map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+            <GraduationCap className="text-slate-500" size={16} />
+            <select 
+              value={yearFilter} 
+              onChange={(e) => setYearFilter(e.target.value)}
+              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="ALL">All Academic Years</option>
+              {availableYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden print:block p-4 mb-4 text-center border-b border-slate-200">
+        <h2 className="text-2xl font-bold text-slate-900">International Cooperative Education Student Report</h2>
+        <p className="text-slate-600 mt-2">Printed on: {new Date().toLocaleDateString('en-US')}</p>
+      </div>
+
+      <div className="overflow-x-auto flex-1 print:overflow-visible">
+        <table className="w-full text-sm text-left whitespace-nowrap print:whitespace-nowrap">
+          <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10 print:static print:shadow-none print:bg-slate-100">
+            <tr>
+              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">Prifix</th>
+              <th className="px-4 py-3 font-semibold">First Name</th>
+              <th className="px-4 py-3 font-semibold">Last Name</th>
+              <th className="px-4 py-3 font-semibold">GPAX</th>
+              <th className="px-4 py-3 font-semibold">English Test</th>
+              <th className="px-4 py-3 font-semibold">Organization</th>
+              <th className="px-4 py-3 font-semibold">Country</th>
+              <th className="px-4 py-3 font-semibold">Position</th>
+              <th className="px-4 py-3 font-semibold text-center">Academic Year</th>
+              <th className="px-4 py-3 font-semibold text-center">Semester</th>
+              <th className="px-4 py-3 font-semibold">Departure</th>
+              <th className="px-4 py-3 font-semibold">Start Date</th>
+              <th className="px-4 py-3 font-semibold">End Date</th>
+              <th className="px-4 py-3 font-semibold">Return</th>
+              <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
+              <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
+              <th className="px-4 py-3 font-semibold text-center">Project Score</th>
+              <th className="px-4 py-3 font-semibold text-center">Document</th>
+              <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredStudents.map((s, i) => (
+              <tr key={s.id} className={`hover:bg-blue-50/50 ${s.status === STATUSES.COMPLETE ? 'bg-purple-50/10' : ''}`}>
+                <td className="px-4 py-3"><Badge status={s.status} /></td>
+                <td className="px-4 py-3 text-slate-600">{s.prefix}</td>
+                <td className="px-4 py-3 font-medium text-slate-900">{s.firstName}</td>
+                <td className="px-4 py-3 font-medium text-slate-900">{s.lastName}</td>
+                <td className="px-4 py-3 text-slate-600">{s.gpax}</td>
+                <td className="px-4 py-3 text-slate-600">{s.engTest}</td>
+                <td className="px-4 py-3 text-slate-700">{s.company}</td>
+                <td className="px-4 py-3 text-slate-700">{s.country}</td>
+                <td className="px-4 py-3 text-slate-700">{s.position}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.year}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.semester}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.departureDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.startDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.endDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
+                <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
+                <td className="px-4 py-3 font-bold text-yellow-500">{(s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `★ ${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : '-'}</td>
+
+                {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
+                <td className="px-4 py-3 text-center print:hidden">
+                  <div className="flex flex-col gap-1.5 items-center justify-center">
+                    {s.facultyScholarshipFileName && (
+                      <a href={`/api/download?url=${encodeURIComponent(s.facultyScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
+                        <Download size={12} /> Faculty
+                      </a>
+                    )}
+                    {s.uniScholarshipFileName && (
+                      <a href={`/api/download?url=${encodeURIComponent(s.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
+                        <Download size={12} /> University
+                      </a>
+                    )}
+                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName ) && (
+                      <span className="text-slate-400 text-xs">-</span>
+                    )}
+                  </div>
+                </td>
+
+                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
+                  <div className="flex items-center justify-center gap-2">
+                    
+                    {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
+                    {canEditRecord(currentUser, s) ? (
+                      <button onClick={() => onEdit(s)} title="Edit Record" className="text-orange-500 hover:text-orange-700 hover:bg-orange-50 p-1.5 rounded transition-colors"><Edit size={16} /></button>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-200">Locked</span>
+                    )}
+                    {/* Admin เท่านั้นที่ลบได้ */}
+                    {currentUser?.role === 'admin' && (
+                    <button onClick={() => onDelete(s.id)} title="Delete Record" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors"><Trash2 size={16} /></button>
+                    )}
+                  </div>
+                </td>
+                
+              </tr>
+            ))}
+            {filteredStudents.length === 0 && (
+              <tr>
+                <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
+              </tr>
+            )}
+            
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -1013,7 +1252,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+    <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Edit className="text-orange-500" /> Edit Student Record</h3>
         <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
@@ -1032,17 +1271,17 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Prefix</label>
-            <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border rounded-md bg-white">
+            <div ><label className="block text-sm font-medium mb-1">Prefix</label>
+            <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option>
             </select></div>
-            <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border rounded-md" required/></div>
-            <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border rounded-md" /></div>
+            <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+            <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+            <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
             <div>
               <label className="block text-sm font-medium mb-1">Faculty</label>
-              <select name="faculty" className="w-full px-3 py-2 border rounded-md bg-white" defaultValue={student.faculty}>
+              <select name="faculty" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" defaultValue={student.faculty}>
                 {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
@@ -1053,17 +1292,17 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" required/></div>
+            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
             <div>
               <label className="block text-sm font-medium mb-1">Country</label>
-              <select name="country" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 bg-white" required>
+              <select name="country" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required>
                 <option value="">Select Country...</option>
                 {COUNTRIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>        
-            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
-            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border rounded-md"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
           </div>
         </div>
 
@@ -1072,10 +1311,10 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Departure Date</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship Start Date</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship End Date</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border rounded-md" /></div>
-            <div><label className="block text-sm font-medium mb-1">Return Date</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border rounded-md" /></div>
+            <div><label className="block text-sm font-medium mb-1">Departure Date</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">Internship Start Date</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">Internship End Date</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">Return Date</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
           </div>
           </div>
         </div>
@@ -1088,54 +1327,136 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
             
             {/* 4.1 Faculty Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
-              <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
-                <Banknote size={16} className="text-emerald-600"/> 1. Faculty Scholarship Request
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* --- ส่วน Header & ปุ่ม Action (จัดให้อยู่ซ้าย-ขวา) --- */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h5 className="font-medium text-slate-800 flex items-center gap-2">
+                  <Banknote size={16} className="text-emerald-600"/> 1. Faculty Scholarship Request
+                </h5>
+                
+                {/* กลุ่มปุ่ม View / Download / Delete ย้ายมาอยู่มุมขวาบนตรงนี้ */}
+                {student.facultyScholarshipFileName && (
+                  <div className="flex items-center gap-2">
+                    {/* ปุ่ม View / Download */}
+                    <a 
+                      href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5 font-medium hover:bg-blue-100 transition-colors"
+                    >
+                      <Download size={14}/> View & Download
+                    </a>
+                    
+                    {/* ปุ่ม Delete */}
+                    {canEditFacEval && (
+                      <button 
+                        type="button" 
+                        onClick={() => onDeleteFile(student.id, 'facultyScholarshipFileName', student.facultyScholarshipFileName)} 
+                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" 
+                        title="Delete File"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* ---------------------------------------------------- */}
+
+              {/* --- ส่วน Input (แบ่ง 2 คอลัมน์ ซ้าย-ขวา) --- */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   {student.facultyScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`}  target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
-                   <input type="file" name="facultyScholarshipFile" accept=".pdf" disabled={isStudent || isUni} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
+                   <input 
+                     type="file" 
+                     name="facultyScholarshipFile" 
+                     accept=".pdf" 
+                     disabled={isStudent || isUni} 
+                     className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#eff6ff] file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer"
+                   />
                  </div>
-                 {student.facultyScholarshipFileName && (
-                     <div className="flex items-center gap-2 mb-2">
-                       <a href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-blue-100"><Download size={14}/> Download File</a>
-                       {canEditFacEval && (
-                         <button type="button" onClick={() => onDeleteFile(student.id, 'facultyScholarshipFileName', student.facultyScholarshipFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
-                       )}
-                     </div>
-                   )}
+                 
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
-                   <input type="number" name="facultyScholarshipAmount" defaultValue={student.facultyScholarshipAmount} disabled={isStudent || isUni}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
+                   <input 
+                     type="number" 
+                     name="facultyScholarshipAmount" 
+                     defaultValue={student.facultyScholarshipAmount} 
+                     disabled={isStudent || isUni} 
+                     placeholder="e.g. 50000"
+                     className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                   />
                  </div>
               </div>
+              {/* ------------------------------------------- */}
+              
             </div>
-
+            
             {/* 4.2 University Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
-              <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
-                <Banknote size={16} className="text-emerald-600"/> 2. University Scholarship Request
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div>
-                    <label className="block text-sm font-medium mb-2">Attach PDF</label>
-                    {student.uniScholarshipFileName && <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}  target="_blank" className="text-xs text-blue-600 border px-2 py-1 rounded inline-block mb-2"><Download size={12} className="inline"/> View Uploaded File</a>}
-                    <input type="file" name="uniScholarshipFile" accept=".pdf" disabled={isStudent || isFac} className="w-full text-sm file:mr-4 file:py-1 file:rounded file:border-0 file:bg-slate-100" />
-                 </div>
-                 {student.uniScholarshipFileName && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <a href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded inline-flex items-center gap-1.5 font-medium hover:bg-blue-100"><Download size={14}/> Download File</a>
-                        {canEditUniEval && (
-                          <button type="button" onClick={() => onDeleteFile(student.id, 'uniScholarshipFileName', student.uniScholarshipFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
-                        )}
-                      </div>
+              
+              {/* --- ส่วน Header & ปุ่ม Action (จัดให้อยู่ซ้าย-ขวา) --- */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h5 className="font-medium text-slate-800 flex items-center gap-2">
+                  <Banknote size={16} className="text-emerald-600"/> 2. University Scholarship Request
+                </h5>
+                
+                {/* กลุ่มปุ่ม View / Download / Delete ย้ายมาอยู่มุมขวาบนตรงนี้ */}
+                {student.uniScholarshipFileName && (
+                  <div className="flex items-center gap-2">
+                    {/* ปุ่ม View / Download */}
+                    <a 
+                      href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5 font-medium hover:bg-blue-100 transition-colors"
+                    >
+                      <Download size={14}/> View & Download
+                    </a>
+                    
+                    {/* ปุ่ม Delete */}
+                    {canEditUniEval && (
+                      <button 
+                        type="button" 
+                        onClick={() => onDeleteFile(student.id, 'uniScholarshipFileName', student.uniScholarshipFileName)} 
+                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" 
+                        title="Delete File"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     )}
+                  </div>
+                )}
+              </div>
+              {/* ---------------------------------------------------- */}
+
+              {/* --- ส่วน Input (แบ่ง 2 คอลัมน์ ซ้าย-ขวา) --- */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                 <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                   <input 
+                     type="file" 
+                     name="uniScholarshipFile"
+                     accept=".pdf" 
+                     disabled={isStudent || isFac} 
+                     className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#eff6ff] file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer"
+                   />
+                 </div>
+                 
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
-                   <input type="number" name="uniScholarshipAmount" defaultValue={student.uniScholarshipAmount} disabled={isStudent || isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
+                   <input 
+                     type="number" 
+                     name="uniScholarshipAmount" 
+                     defaultValue={student.uniScholarshipAmount} 
+                     disabled={isStudent || isFac}
+                     placeholder="e.g. 50000"
+                     className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                   />
                  </div>
               </div>
+              {/* ------------------------------------------- */}
+              
             </div>
           </div>
         </div>
@@ -1453,241 +1774,6 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
   );
 }
 
-function StudentListView({ students , currentUser, onEdit , onDelete}) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [yearFilter, setYearFilter] = useState('ALL');
-
-  // Derive unique years dynamically for the filter dropdown
-  const availableYears = useMemo(() => {
-    const years = new Set(students.map(s => s.year));
-    return Array.from(years).sort((a, b) => b - a);
-  }, [students]);
-
-  // Apply search and filters
-  const filteredStudents = useMemo(() => {
-    return students.filter(s => {
-      if (currentUser.role === 'facultyCoordinator' && s.faculty !== currentUser.faculty) return false;
-      if (currentUser.role === 'student' && s.createdBy !== currentUser.username) return false;
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
-        s.firstName.toLowerCase().includes(searchLower) ||
-        s.lastName.toLowerCase().includes(searchLower) ||
-        s.company.toLowerCase().includes(searchLower) ||
-        s.country.toLowerCase().includes(searchLower) ||
-        s.position.toLowerCase().includes(searchLower);
-      
-      const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
-      const matchesYear = yearFilter === 'ALL' || s.year.toString() === yearFilter.toString();
-
-      return matchesSearch && matchesStatus && matchesYear;
-    });
-  }, [students, currentUser, searchTerm, statusFilter, yearFilter ]);
-
-  const handleExportExcel = () => {
-    // 1. เตรียมหัวตาราง
-    const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
-      'Faculty','Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
-      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)', 'Project Score'];
-    
-    // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
-    const rows = filteredStudents.map(s => [
-      s.status, 
-      s.prefix, 
-      s.firstName, 
-      s.lastName, 
-      s.gpax, 
-      s.engTest, 
-      `"${s.faculty || '-'}"`, 
-      `"${s.company || ''}"`, 
-      `"${s.country || ''}"`, 
-      `"${s.position|| ''}"`, 
-      s.year, 
-      s.semester, 
-      new Date(s.departureDate).toLocaleDateString('en-US'),
-      new Date(s.startDate).toLocaleDateString('en-US'),
-      new Date(s.endDate).toLocaleDateString('en-US'),
-      new Date(s.returnDate).toLocaleDateString('en-US'),
-      s.facultyScholarshipAmount || '0',
-      s.uniScholarshipAmount || '0',
-     (s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : ''
-    ]);
-
-    // รวมเป็นข้อความ CSV
-    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    // สร้างไฟล์แล้วสั่งดาวน์โหลดอัตโนมัติ (ใส่ BOM \uFEFF เพื่อให้ Excel อ่านภาษาไทย/UTF-8 ได้ถูกต้อง)
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Student_Records_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:overflow-visible">
-      <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-4 print:hidden">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-          <FileSpreadsheet className="text-emerald-600" /> Spreadsheet: Student Records
-        </h3>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">Total {filteredStudents.length} records</span>
-          <button onClick={handleExportExcel} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Printer size={16} /> Export to Export Excel
-          </button>
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Printer size={16} /> Export to PDF
-          </button>
-        </div>
-      </div>
-      
-      {/* Search and Filter Controls */}
-      <div className="p-4 border-b border-slate-200 bg-white flex flex-col lg:flex-row gap-4 print:hidden">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by name, organization, country, position..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
-            <Filter className="text-slate-500" size={16} />
-            <select 
-              value={statusFilter} 
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
-            >
-              <option value="ALL">All Statuses</option>
-              {Object.values(STATUSES).map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
-            <GraduationCap className="text-slate-500" size={16} />
-            <select 
-              value={yearFilter} 
-              onChange={(e) => setYearFilter(e.target.value)}
-              className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
-            >
-              <option value="ALL">All Academic Years</option>
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden print:block p-4 mb-4 text-center border-b border-slate-200">
-        <h2 className="text-2xl font-bold text-slate-900">International Cooperative Education Student Report</h2>
-        <p className="text-slate-600 mt-2">Printed on: {new Date().toLocaleDateString('en-US')}</p>
-      </div>
-
-      <div className="overflow-x-auto flex-1 print:overflow-visible">
-        <table className="w-full text-sm text-left whitespace-nowrap print:whitespace-nowrap">
-          <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10 print:static print:shadow-none print:bg-slate-100">
-            <tr>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Prifix</th>
-              <th className="px-4 py-3 font-semibold">First Name</th>
-              <th className="px-4 py-3 font-semibold">Last Name</th>
-              <th className="px-4 py-3 font-semibold">GPAX</th>
-              <th className="px-4 py-3 font-semibold">English Test</th>
-              <th className="px-4 py-3 font-semibold">Organization</th>
-              <th className="px-4 py-3 font-semibold">Country</th>
-              <th className="px-4 py-3 font-semibold">Position</th>
-              <th className="px-4 py-3 font-semibold text-center">Academic Year</th>
-              <th className="px-4 py-3 font-semibold text-center">Semester</th>
-              <th className="px-4 py-3 font-semibold">Departure</th>
-              <th className="px-4 py-3 font-semibold">Start Date</th>
-              <th className="px-4 py-3 font-semibold">End Date</th>
-              <th className="px-4 py-3 font-semibold">Return</th>
-              <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
-              <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
-              <th className="px-4 py-3 font-semibold text-center">Project Score</th>
-              <th className="px-4 py-3 font-semibold text-center">Document</th>
-              <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredStudents.map((s, i) => (
-              <tr key={s.id} className={`hover:bg-blue-50/50 ${s.status === STATUSES.COMPLETE ? 'bg-purple-50/10' : ''}`}>
-                <td className="px-4 py-3"><Badge status={s.status} /></td>
-                <td className="px-4 py-3 text-slate-600">{s.prefix}</td>
-                <td className="px-4 py-3 font-medium text-slate-900">{s.firstName}</td>
-                <td className="px-4 py-3 font-medium text-slate-900">{s.lastName}</td>
-                <td className="px-4 py-3 text-slate-600">{s.gpax}</td>
-                <td className="px-4 py-3 text-slate-600">{s.engTest}</td>
-                <td className="px-4 py-3 text-slate-700">{s.company}</td>
-                <td className="px-4 py-3 text-slate-700">{s.country}</td>
-                <td className="px-4 py-3 text-slate-700">{s.position}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.year}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.semester}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.departureDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.startDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.endDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
-                <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
-                <td className="px-4 py-3 font-bold text-yellow-500">{(s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `★ ${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : '-'}</td>
-
-                {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
-                <td className="px-4 py-3 text-center print:hidden">
-                  <div className="flex flex-col gap-1.5 items-center justify-center">
-                    {s.facultyScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(s.facultyScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
-                        <Download size={12} /> Faculty
-                      </a>
-                    )}
-                    {s.uniScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(s.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
-                        <Download size={12} /> University
-                      </a>
-                    )}
-                    {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName ) && (
-                      <span className="text-slate-400 text-xs">-</span>
-                    )}
-                  </div>
-                </td>
-
-                <td className="px-4 py-2 text-center print:hidden sticky right-0 bg-white group-hover:bg-blue-50 border-l border-slate-100">
-                  <div className="flex items-center justify-center gap-2">
-                    
-                    {/* เช็คสิทธิ์การแก้ไขด้วยฟังก์ชัน canEditRecord ที่สร้างไว้ */}
-                    {canEditRecord(currentUser, s) ? (
-                      <button onClick={() => onEdit(s)} title="Edit Record" className="text-orange-500 hover:text-orange-700 hover:bg-orange-50 p-1.5 rounded transition-colors"><Edit size={16} /></button>
-                    ) : (
-                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-200">Locked</span>
-                    )}
-                    {/* Admin เท่านั้นที่ลบได้ */}
-                    {currentUser?.role === 'admin' && (
-                    <button onClick={() => onDelete(s.id)} title="Delete Record" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors"><Trash2 size={16} /></button>
-                    )}
-                  </div>
-                </td>
-                
-              </tr>
-            ))}
-            {filteredStudents.length === 0 && (
-              <tr>
-                <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
-              </tr>
-            )}
-            
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 function UserManagementView({ users, setUsers ,currentUser}) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -1847,7 +1933,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Faculty</label>
-            <select name="faculty" defaultValue={editingUser?.faculty || ''} className="w-full px-3 py-2 border rounded-md bg-white" >
+            <select name="faculty" defaultValue={editingUser?.faculty || ''} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" >
               <option value="">Select Faculty...</option>
               {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
