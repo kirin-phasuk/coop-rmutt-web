@@ -1388,7 +1388,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                    />
                  </div>
               </div>
-              {/* ------------------------------------------- */}
               
             </div>
             
@@ -1428,7 +1427,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                   </div>
                 )}
               </div>
-              {/* ---------------------------------------------------- */}
 
               {/* --- ส่วน Input (แบ่ง 2 คอลัมน์ ซ้าย-ขวา) --- */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -1455,8 +1453,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                    />
                  </div>
               </div>
-              {/* ------------------------------------------- */}
-              
+
             </div>
           </div>
         </div>
@@ -1472,74 +1469,110 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               <div><label className="block text-sm font-bold mb-1">Project Name</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="Enter Project Title" /></div>
               <div><label className="block text-sm font-bold mb-1">Project Description</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border rounded-md" placeholder="Briefly describe the project..." /></div>
               <div><label className="block text-sm font-bold mb-1">Website URL (Optional)</label><input type="url" name="projectWebsite" defaultValue={student.projectWebsite} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="https://..." /></div>
+                
+               {/* ---------------- 1. Presentation File (PDF/PPT) ---------------- */}
                 {/* ---------------- 1. Presentation File (PDF/PPT) ---------------- */}
                 <div className="flex flex-col gap-2">
                   <label className="block text-sm font-semibold text-purple-800">Presentation File (PDF/PPT)</label>
                   
-                  <div className="flex flex-wrap items-center gap-4">
-                    {/* 🚀 ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
-                    {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
-                      <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
-                        <Upload size={16} /> Attach File
-                        {/* 🚀 ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
-                        <input 
-                          type="file" 
-                          name="projectPdfFile" 
-                          className="hidden" 
-                          accept=".pdf,.ppt,.pptx" 
-                        />
-                      </label>
-                    )}
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    
+                    {/* --- ฝั่งซ้าย: ปุ่ม Attach File และ ข้อความแสดงชื่อไฟล์ --- */}
+                    <div className="flex items-center gap-3">
+                      {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
+                        <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0">
+                          <Upload size={16} /> Attach File
+                          <input 
+                            type="file" 
+                            name="projectPdfFile" 
+                            className="hidden" 
+                            accept=".pdf,.ppt,.pptx" 
+                          />
+                        </label>
+                      )}
+                      
+                      {/* ส่วนที่เพิ่มเข้ามา: แสดงชื่อไฟล์ หรือ No file chosen */}
+                      <span className="text-sm text-slate-500 truncate max-w-xs">
+                        {student.projectPdfFileName ? student.projectPdfFileName : "No file chosen"}
+                      </span>
+                    </div>
 
-                    {/* ปุ่ม View & Download แสดงเสมอถ้ามีไฟล์อัปโหลดไว้แล้ว */}
+                    {/* --- ฝั่งขวา: ปุ่ม View & Download และ Delete --- */}
                     {student.projectPdfFileName && (
-                      <a 
-                        href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
-                      >
-                        <Download size={16} /> View & Download File
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <a 
+                          href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0"
+                        >
+                          <Download size={16} /> View & Download File
+                        </a>
+                        
+                        {(isStudent || isAdmin) && (
+                          <button 
+                            type="button" 
+                            onClick={() => onDeleteFile(student.id, 'projectPdfFileName', student.projectPdfFileName)} 
+                            className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors shrink-0" 
+                            title="Delete File"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     )}
-                  {(isStudent || isAdmin) && student.projectPdfFileName &&  (
-                        <button type="button" onClick={() => onDeleteFile(student.id, 'projectPdfFileName', student.projectPdfFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
-                  )}
                   </div>
                 </div>
 
-                {/* ---------------- 2. Full Report Book (PDF) ---------------- */}
-                <div className="flex flex-col gap-2 mt-4">
+                {/* ---------------- 2. Report File (PDF/PPT) ---------------- */}
+                <div className="flex flex-col gap-2">
                   <label className="block text-sm font-semibold text-purple-800">Full Report Book (PDF)</label>
                   
-                  <div className="flex flex-wrap items-center gap-4">
-                    {/*  ซ่อนปุ่ม Attach File สำหรับอาจารย์และมหาลัย */}
-                    {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
-                      <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors">
-                        <Upload size={16} /> Attach Report File
-                        {/*ใส่ className="hidden" ตรงนี้เพื่อซ่อนข้อความ Choose file No file chosen */}
-                        <input 
-                          type="file" 
-                          name="projectReportFile" 
-                          className="hidden" 
-                          accept=".pdf" 
-                        />
-                      </label>
-                    )}
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    
+                    {/* --- ฝั่งซ้าย: ปุ่ม Attach File และ ข้อความแสดงชื่อไฟล์ --- */}
+                    <div className="flex items-center gap-3">
+                      {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
+                        <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0">
+                          <Upload size={16} /> Attach Report File 
+                          <input 
+                            type="file" 
+                            name="projectReportFile" 
+                            className="hidden" 
+                            accept=".pdf,.ppt,.pptx" 
+                          />
+                        </label>
+                      )}
+                      
+                      {/* ส่วนที่เพิ่มเข้ามา: แสดงชื่อไฟล์ หรือ No file chosen */}
+                      <span className="text-sm text-slate-500 truncate max-w-xs">
+                        {student.projectReportFileName ? student.projectReportFileName : "No file chosen"}
+                      </span>
+                    </div>
 
-                    {/* ปุ่ม View & Download แสดงเสมอถ้ามีไฟล์อัปโหลดไว้แล้ว */}
-                    {student.projectReportFileName && (
-                      <a 
-                        href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors"
-                      >
-                        <Download size={16} /> View & Download File
-                      </a>
-                    )}
-                    {(isStudent || isAdmin) && student.projectReportFileName&& (
-                        <button type="button" onClick={() => onDeleteFile(student.id, 'projectReportFileName', student.projectReportFileName)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" title="Delete File"><Trash2 size={16} /></button>
+                    {/* --- ฝั่งขวา: ปุ่ม View & Download และ Delete --- */}
+                    {student.projectReportFileName && ( // แก้เป็น projectReportFileName
+                      <div className="flex items-center gap-2">
+                        <a 
+                          href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0"
+                        >
+                          <Download size={16} /> View & Download File
+                        </a>
+                        
+                        {(isStudent || isAdmin) && (
+                          <button 
+                            type="button" 
+                            onClick={() => onDeleteFile(student.id, 'projectReportFileName', student.projectReportFileName)}
+                            className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors shrink-0" 
+                            title="Delete File"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
