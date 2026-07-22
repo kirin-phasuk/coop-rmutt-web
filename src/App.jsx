@@ -1051,25 +1051,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
 
       <div className="overflow-x-auto flex-1 print:hidden">
         <table className="w-full text-sm text-left whitespace-nowrap">
-           {/* ... โค้ด <thead> และ <tbody> ตารางอยู่เหมือนเดิมทุกอย่าง ... */}
-        </table>
-      </div>
-
-      {/* 2. เพิ่มส่วนนี้ต่อท้ายตาราง (จะโชว์เฉพาะตอน Print เท่านั้น) */}
-      <div className="hidden print:block w-full bg-white">
-        {filteredStudents.map((student) => (
-          /* break-after-page จะสั่งให้ปริ้นเตอร์ขึ้นหน้าใหม่เสมอเมื่อจบ 1 คน */
-          <div key={student.id} className="break-after-page">
-            <PrintApplicationForm student={student} />
-          </div>
-        ))}
-        <h2 className="text-2xl font-bold text-slate-900">International Cooperative Education Student Report</h2>
-        <p className="text-slate-600 mt-2">Printed on: {new Date().toLocaleDateString('en-US')}</p>
-      </div>
-
-      <div className="overflow-x-auto flex-1 print:overflow-visible">
-        <table className="w-full text-sm text-left whitespace-nowrap print:whitespace-nowrap">
-          <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10 print:static print:shadow-none print:bg-slate-100">
+          <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10">
             <tr>
               <th className="px-4 py-3 font-semibold">Status</th>
               <th className="px-4 py-3 font-semibold text-blue-700">Student ID</th>
@@ -1094,7 +1076,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredStudents.map((s, i) => (
+             {filteredStudents.map((s, i) => (
               <tr key={s.id} className={`hover:bg-blue-50/50 ${s.status === STATUSES.COMPLETE ? 'bg-purple-50/10' : ''}`}>
                 <td className="px-4 py-3"><Badge status={s.status} /></td>
                 <td className="px-4 py-3 font-bold text-blue-600">{s.studentId}</td>
@@ -1156,9 +1138,16 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
                 <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
               </tr>
             )}
-            
           </tbody>
         </table>
+      </div>
+      {/* ✅ 2. ย้ายโค้ดดึงหน้า A4 มาไว้ล่างสุดของ StudentListView (หลังปิด div ตาราง) */}
+      <div className="hidden print:block w-full bg-white">
+        {filteredStudents.map((student) => (
+          <div key={student.id} className="break-after-page">
+            <PrintApplicationForm student={student} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -1254,6 +1243,25 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
       )}
       
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* ✅ แทรกกล่องอัปโหลดรูปภาพตรงนี้ครับ */}
+        <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm mb-4 flex items-start gap-6">
+          <div className="w-32 h-40 shrink-0 bg-slate-100 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center overflow-hidden relative">
+            {imageUrl ? (
+              <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-center text-slate-400 p-2">
+                <Upload size={24} className="mx-auto mb-1 opacity-50" />
+                <span className="text-[10px]">1 x 1.5 inch</span>
+              </div>
+            )}
+            {isUploadingImg && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-blue-600">Uploading...</div>}
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Profile Picture (รูปถ่ายหน้าตรง)</label>
+            <input type="file" accept="image/*" onChange={onImageChange} disabled={isUploadingImg || isUni} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+            <p className="text-xs text-slate-400 mt-2">Recommended: .jpg, .png (Max 5MB). The system will automatically compress the image to save storage.</p>
+          </div>
+        </div>
         
         {/* Section 1: Personal Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
