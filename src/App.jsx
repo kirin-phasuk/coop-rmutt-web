@@ -1179,9 +1179,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
     const facFile = formData.get('facultyScholarshipFile');
     const uniFile = formData.get('uniScholarshipFile');
-    const projPdf = formData.get('projectPdfFile');
-    const projReport = formData.get('projectReportFile');
-
+    
     // File Uploads
     if (facFile && facFile.size > 0) data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
     else data.facultyScholarshipFileName = student.facultyScholarshipFileName || null;
@@ -1190,14 +1188,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
     if (uniFile && uniFile.size > 0) data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
     else data.uniScholarshipFileName = student.uniScholarshipFileName || null;
     delete data.uniScholarshipFile;
-
-    if (projPdf && projPdf.size > 0) data.projectPdfFileName = await uploadFileToCloud(projPdf);
-    else data.projectPdfFileName = student.projectPdfFileName || null;
-    delete data.projectPdfFile;
-
-    if (projReport && projReport.size > 0) data.projectReportFileName = await uploadFileToCloud(projReport);
-    else data.projectReportFileName = student.projectReportFileName || null;
-    delete data.projectReportFile;
 
     const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
