@@ -187,22 +187,6 @@ const canEditRecord = (user, record) => {
   return false;
 };
 
-// Star Rating Component
-const StarRating = ({ rating, setRating, readOnly }) => {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star 
-          key={star} 
-          size={24} 
-          className={`cursor-pointer transition-colors ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'} ${readOnly ? 'pointer-events-none' : 'hover:scale-110'}`}
-          onClick={() => !readOnly && setRating(star)}
-        />
-      ))}
-    </div>
-  );
-}
-
 // Components 
 const Badge = ({ status }) => (
   <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[status] || 'bg-gray-100'}`}>
@@ -966,7 +950,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
     // 1. เตรียมหัวตาราง
     const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
       'Faculty','Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
-      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)', 'Project Score'];
+      'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)'];
     
     // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
     const rows = filteredStudents.map(s => [
@@ -988,7 +972,6 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
       new Date(s.returnDate).toLocaleDateString('en-US'),
       s.facultyScholarshipAmount || '0',
       s.uniScholarshipAmount || '0',
-     (s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : ''
     ]);
 
     // รวมเป็นข้อความ CSV
@@ -1089,7 +1072,6 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
               <th className="px-4 py-3 font-semibold">Return</th>
               <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
               <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
-              <th className="px-4 py-3 font-semibold text-center">Project Score</th>
               <th className="px-4 py-3 font-semibold text-center">Document</th>
               <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">Actions</th>
             </tr>
@@ -1114,8 +1096,6 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-slate-500">{new Date(s.returnDate).toLocaleDateString('en-US')}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.facultyScholarshipAmount}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{s.uniScholarshipAmount}</td>
-                <td className="px-4 py-3 font-bold text-yellow-500">{(s.status === STATUSES.PROJ_FINISHED || s.status === STATUSES.PROJ_SUBMITTED) && (Number(s.facScore) > 0 || Number(s.uniScore) > 0) ? `★ ${Number(s.facScore || 0) + Number(s.uniScore || 0)}` : '-'}</td>
-
                 {/* 👉 กล่องใส่ปุ่มโหลดเอกสารในตาราง */}
                 <td className="px-4 py-3 text-center print:hidden">
                   <div className="flex flex-col gap-1.5 items-center justify-center">
@@ -1170,9 +1150,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAction, setSubmitAction] = useState('update');
-  // Local state for star rating
-  const [facScore, setFacScore] = useState(student.facScore || 0);
-  const [uniScore, setUniScore] = useState(student.uniScore || 0);
   // Role Checks
   if (!student) return null;
   const isStudent = currentUser.role === 'student';
@@ -1240,8 +1217,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
-    data.facScore = Number(facScore);
-    data.uniScore = Number(uniScore);
     // Submit Project ให้บังคับเปลี่ยนสถานะทันที
     if (submitAction === 'submitProject') {
       data.status = STATUSES.PROJ_SUBMITTED;
@@ -1270,20 +1245,22 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         {/* Section 1: Personal Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div ><label className="block text-sm font-medium mb-1">Prefix</label>
-            <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-              <option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option>
-            </select></div>
-            <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
-            <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
-            <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Faculty</label>
-              <select name="faculty" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" defaultValue={student.faculty}>
-                {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
+          <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+              <div ><label className="block text-sm font-medium mb-1">Prefix</label>
+              <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option>
+              </select></div>
+              <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Faculty</label>
+                <select name="faculty" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" defaultValue={student.faculty}>
+                  {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -1291,6 +1268,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         {/* Section 2: Organization Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+          <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
             <div>
@@ -1304,17 +1282,18 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
             <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
             <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
           </div>
+          </div>
         </div>
 
         {/* Section 3: Schedule */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium mb-1">Departure Date</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship Start Date</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium mb-1">Internship End Date</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium mb-1">Return Date</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+          <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Departure Date</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Internship Start Date</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Internship End Date</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Return Date</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
           </div>
           </div>
         </div>
@@ -1466,137 +1445,10 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
             
             {/* Student Project Input */}
             <div className="space-y-4 mb-8 bg-white p-5 rounded border border-purple-100">
-              <div><label className="block text-sm font-bold mb-1">Project Name</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="Enter Project Title" /></div>
-              <div><label className="block text-sm font-bold mb-1">Project Description</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border rounded-md" placeholder="Briefly describe the project..." /></div>
-              <div><label className="block text-sm font-bold mb-1">Website URL (Optional)</label><input type="url" name="projectWebsite" defaultValue={student.projectWebsite} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border rounded-md" placeholder="https://..." /></div>
-                
-               {/* ---------------- 1. Presentation File (PDF/PPT) ---------------- */}
-                {/* ---------------- 1. Presentation File (PDF/PPT) ---------------- */}
-                <div className="flex flex-col gap-2">
-                  <label className="block text-sm font-semibold text-purple-800">Presentation File (PDF/PPT)</label>
-                  
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    
-                    {/* --- ฝั่งซ้าย: ปุ่ม Attach File และ ข้อความแสดงชื่อไฟล์ --- */}
-                    <div className="flex items-center gap-3">
-                      {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
-                        <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0">
-                          <Upload size={16} /> Attach File
-                          <input 
-                            type="file" 
-                            name="projectPdfFile" 
-                            className="hidden" 
-                            accept=".pdf,.ppt,.pptx" 
-                          />
-                        </label>
-                      )}
-                      
-                      {/* ส่วนที่เพิ่มเข้ามา: แสดงชื่อไฟล์ หรือ No file chosen */}
-                      <span className="text-sm text-slate-500 truncate max-w-xs">
-                        {student.projectPdfFileName ? student.projectPdfFileName : "No file chosen"}
-                      </span>
-                    </div>
-
-                    {/* --- ฝั่งขวา: ปุ่ม View & Download และ Delete --- */}
-                    {student.projectPdfFileName && (
-                      <div className="flex items-center gap-2">
-                        <a 
-                          href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0"
-                        >
-                          <Download size={16} /> View & Download File
-                        </a>
-                        
-                        {(isStudent || isAdmin) && (
-                          <button 
-                            type="button" 
-                            onClick={() => onDeleteFile(student.id, 'projectPdfFileName', student.projectPdfFileName)} 
-                            className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors shrink-0" 
-                            title="Delete File"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ---------------- 2. Report File (PDF/PPT) ---------------- */}
-                <div className="flex flex-col gap-2">
-                  <label className="block text-sm font-semibold text-purple-800">Full Report Book (PDF)</label>
-                  
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    
-                    {/* --- ฝั่งซ้าย: ปุ่ม Attach File และ ข้อความแสดงชื่อไฟล์ --- */}
-                    <div className="flex items-center gap-3">
-                      {currentUser?.role !== 'facultyCoordinator' && currentUser?.role !== 'universityCoordinator' && (
-                        <label className="cursor-pointer text-purple-700 bg-white border border-purple-300 hover:bg-purple-50 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0">
-                          <Upload size={16} /> Attach Report File 
-                          <input 
-                            type="file" 
-                            name="projectReportFile" 
-                            className="hidden" 
-                            accept=".pdf,.ppt,.pptx" 
-                          />
-                        </label>
-                      )}
-                      
-                      {/* ส่วนที่เพิ่มเข้ามา: แสดงชื่อไฟล์ หรือ No file chosen */}
-                      <span className="text-sm text-slate-500 truncate max-w-xs">
-                        {student.projectReportFileName ? student.projectReportFileName : "No file chosen"}
-                      </span>
-                    </div>
-
-                    {/* --- ฝั่งขวา: ปุ่ม View & Download และ Delete --- */}
-                    {student.projectReportFileName && ( // แก้เป็น projectReportFileName
-                      <div className="flex items-center gap-2">
-                        <a 
-                          href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors shrink-0"
-                        >
-                          <Download size={16} /> View & Download File
-                        </a>
-                        
-                        {(isStudent || isAdmin) && (
-                          <button 
-                            type="button" 
-                            onClick={() => onDeleteFile(student.id, 'projectReportFileName', student.projectReportFileName)}
-                            className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors shrink-0" 
-                            title="Delete File"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-            {/* Evaluation Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Faculty Evaluation */}
-              <div className="bg-blue-50/50 p-4 rounded border border-blue-100">
-                <h5 className="font-bold text-blue-800 mb-3 flex items-center gap-1"><MessageSquare size={16}/> Faculty Evaluation</h5>
-                <div className="mb-3"><label className="block text-xs font-semibold mb-1 text-slate-500">SCORE</label>
-                  <StarRating rating={facScore} setRating={setFacScore} readOnly={!canEditFacEval} />
-                </div>
-                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="facComment" defaultValue={student.facComment} disabled={!canEditFacEval} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="Faculty advisor comments..." /></div>
-              </div>
-
-              {/* Uni Evaluation */}
-              <div className="bg-emerald-50/50 p-4 rounded border border-emerald-100">
-                <h5 className="font-bold text-emerald-800 mb-3 flex items-center gap-1"><MessageSquare size={16}/> University Evaluation</h5>
-                <div className="mb-3"><label className="block text-xs font-semibold mb-1 text-slate-500">SCORE</label>
-                  <StarRating rating={uniScore} setRating={setUniScore} readOnly={!canEditUniEval} />
-                </div>
-                <div><label className="block text-xs font-semibold mb-1 text-slate-500">COMMENTS</label><textarea name="uniComment" defaultValue={student.uniComment} disabled={!canEditUniEval} rows={3} className="w-full px-2 py-1 text-sm border rounded bg-white" placeholder="University advisor comments..." /></div>
-              </div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">Project Name</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Enter Project Title" /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">Project Description</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Briefly describe the project..." /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">Project GoogleDrive Link(Optional)</label><input type="url" name="projectDrive" defaultValue={student.projectDrive} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="https://..." /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">Report GoogleDrive Link(Optional)</label><input type="url" name="reportDrive" defaultValue={student.reportDrive} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="https://..." /></div>
             </div>
 
           </div>
@@ -1705,14 +1557,13 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                   <div className="mt-3 p-4 bg-purple-50/50 rounded border border-purple-200 text-sm">
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-center">
-                        <strong className="text-purple-800">Project: {student.projectName || 'Not submitted yet'}</strong>
-                        <span className="font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-200">★ Fac: {student.facScore||0} | Uni: {student.uniScore||0}</span>
-                      </div>
+                        <strong className="text-purple-800">Project: {student.projectName || 'Not submitted yet'}</strong>                      </div>
                       <p className="text-slate-600 italic">"{student.projectDescription}"</p>
                       <div className="flex gap-2 flex-wrap mt-1">
                          {student.projectPdfFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Presentation</a>}
                          {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Report Book</a>}
-                         {student.projectWebsite && <a href={`/api/download?url=${encodeURIComponent(student.projectWebsite)}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Website</a>}
+                         {student.projectDrive && <a href={student.projectDrive.startsWith('http') ? student.projectDrive : `https://${student.projectDrive}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Project Drive</a>}
+                         {student.reportDrive && <a href={student.reportDrive.startsWith('http') ? student.reportDrive : `https://${student.reportDrive}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Report Drive</a>}
                       </div>
                     </div>
                   </div>
@@ -1943,16 +1794,16 @@ function UserManagementView({ users, setUsers ,currentUser}) {
         {/* 👉 3. ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
         <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-            <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Username / StudentID</label>
             <input type="text" name="username" defaultValue={editingUser?.username || ''} placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
             <input type="password" name="password" defaultValue={editingUser?.password || ''} placeholder="Create password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+            <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
@@ -1998,8 +1849,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs text-slate-700 uppercase bg-slate-100">
               <tr>
-                <th className="px-6 py-3">Full Name</th>
                 <th className="px-6 py-3">Username</th>
+                <th className="px-6 py-3">Full Name</th>
                 <th className="px-6 py-3">Role</th>
                 <th className="px-6 py-3">Faculty</th>
                 <th className="px-6 py-3 text-center">Actions</th>
@@ -2008,8 +1859,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <tbody className="divide-y divide-slate-100">
               {filteredUsers.map(user => (
                 <tr key={user.username} className={`transition-colors ${editingUser?.username === user.username ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
-                  <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
                   <td className="px-6 py-4">{user.username}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">{user.name}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                       user.role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
