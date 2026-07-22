@@ -859,7 +859,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="url" name="facultyScholarshipFileName" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="url" name="facultyScholarshipFileName" placeholder="https://..." className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -876,7 +876,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="url" name="uniScholarshipFileName" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="url" name="uniScholarshipFileName" placeholder="https://..." className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -1304,14 +1304,14 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               
               {/* --- ส่วน Header & ปุ่ม Action (จัดให้อยู่ซ้าย-ขวา) --- */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                <h5 className="font-medium text-slate-800 flex items-center gap-2">
+                <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
                   <Banknote size={16} className="text-emerald-600"/> 2. University Scholarship Request
                 </h5>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Document Link (URL)
+                   <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">Document Link (URL)
                     {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
