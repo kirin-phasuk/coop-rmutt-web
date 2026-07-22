@@ -183,7 +183,7 @@ const canEditRecord = (user, record) => {
   if (!user || !record) return false;
   if (user.role === 'admin' || user.role === 'universityCoordinator') return true; 
   if (user.role === 'facultyCoordinator') return record.faculty === user.faculty;
-  if (user.role === 'student') return record.createdBy === user.username;
+  if (user.role === 'student') return record.studentId === user.username;
   return false;
 };
 
@@ -230,7 +230,7 @@ export default function App() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
 
-  const studentHasRecord = currentUser?.role === 'student' && students.some(s => s.createdBy === currentUser?.username);
+  const studentHasRecord = currentUser?.role === 'student' && students.some(s => s.studentId === currentUser?.username);
 
   useEffect(() => { localStorage.setItem('mock_users', JSON.stringify(users)); }, [users]);
   useEffect(() => {
@@ -362,54 +362,6 @@ export default function App() {
     } catch (error) { console.error(error); }
   };
 
-  // Assign Student to Record
-  const handleAssignStudent = async (recordId, currentCreatedBy) => {
-    // ดึงข้อมูล User ปัจจุบันที่เป็นคนสร้าง (เพื่อดูว่าใช่นักศึกษาไหม ถ้าใช่ให้แสดงชื่อเดิมในช่องกรอก)
-    const currentOwner = users[currentCreatedBy]?.role === 'student' ? currentCreatedBy : '';
-    
-    const usernameInput = window.prompt("Enter Student Username to grant access (Leave blank to remove access):", currentOwner);
-    
-    if (usernameInput === null) return; // กดยกเลิก
-    const username = usernameInput.trim();
-
-    // กรณีลบข้อความจนว่างเปล่า = ถอดสิทธิ์นักศึกษาออก แล้วคืนสิทธิ์ความเป็นเจ้าของให้คนกด
-    if (username === "") {
-      if (window.confirm("Are you sure you want to remove the assigned student?")) {
-         await handleUpdateStudent(recordId, { createdBy: currentUser.username });
-         alert("Student access removed successfully.");
-      }
-      return;
-    }
-
-    // ตรวจสอบว่ามี User นี้ในระบบหรือไม่
-    const targetUser = users[username];
-    if (!targetUser) {
-      alert(`Error: User '${username}' not found in the system.`);
-      return;
-    }
-    // ตรวจสอบว่าเป็นสิทธิ์ Student หรือไม่
-    if (targetUser.role !== 'student') {
-      alert(`Error: User '${username}' is a ${targetUser.role}. Access can only be granted to 'student' roles.`);
-      return;
-    }
-
-    // ตรวจสอบกฎ: 1 Student ต่อ 1 Record
-    const existingRecord = students.find(s => s.createdBy === username && s.id !== recordId);
-    if (existingRecord) {
-      alert(`Error: Student '${username}' already has access to another record.`);
-      return;
-    }
-
-    // บันทึกสิทธิ์ (เขียนทับลงใน createdBy)
-    try {
-      await handleUpdateStudent(recordId, { createdBy: username });
-      alert(`Successfully granted access to student: ${username}`);
-    } catch (error) {
-      console.error("Assign Error:", error);
-      alert("Failed to assign student.");
-    }
-  };
-
   const handleDeleteStudent = async (id) => {
     // แจ้งเตือนยืนยันก่อนทำการลบทั้งหมด
   if (!window.confirm("Are you sure you want to completely delete this student's record and all associated files? This action cannot be undone.")) {
@@ -526,7 +478,7 @@ export default function App() {
             <NavItem icon={<CheckSquare size={20} />} label="Approvals" active={activeTab === 'approval'} onClick={() => {setActiveTab('approval'); setEditingStudent(null);}} />
           )}
 
-          {currentUser.role === 'admin' && (
+          {['admin', 'facultyCoordinator'].includes(currentUser.role) && (
               <NavItem icon={<UserCog size={20} />} label="User Management" active={activeTab === 'users'} onClick={() => {setActiveTab('users'); setEditingStudent(null); }} />
           )}
           
@@ -740,7 +692,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
     }
 
     // Required fields base on Student
-    const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
+    const requiredFields = ['studentId','prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
     for (let field of requiredFields) {
       if (!data[field] || String(data[field]).trim() === "") {
@@ -796,6 +748,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
           <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div><label className="block text-sm font-medium mb-1">Student ID (Username)</label><input type="text" name="studentId" defaultValue={currentUser.role === 'student' ? currentUser.username : ''} readOnly={currentUser.role === 'student'} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50" required placeholder="e.g. 116310..." /></div>
               <div><label className="block text-sm font-medium mb-1">Prefix</label><select name="prefix" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required><option value="">Select...</option><option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option></select></div>
               <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
               <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
@@ -932,13 +885,14 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
 
   const handleExportExcel = () => {
     // 1. เตรียมหัวตาราง
-    const headers = ['Status', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
+    const headers = ['Status', 'Student ID', 'Prefix', 'First Name', 'Last Name', 'GPAX', 'English Test', 
       'Faculty','Organization', 'Country', 'Position', 'Academic Year', 'Semester', 'Departure',
       'Start Date', 'End Date', 'Return Date', 'Faculty Scholarship (THB)', 'University Scholarship (THB)'];
     
     // 2. ดึงข้อมูลนักศึกษาที่กรองแล้วมาจัดรูปแบบ (ใส่เครื่องหมายคำพูดคร่อมกันตัวลูกน้ำในข้อความ)
     const rows = filteredStudents.map(s => [
       s.status, 
+      `"${s.studentId || '-'}"`,
       s.prefix, 
       s.firstName, 
       s.lastName, 
@@ -1040,6 +994,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
           <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10 print:static print:shadow-none print:bg-slate-100">
             <tr>
               <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold text-blue-700">Student ID</th>
               <th className="px-4 py-3 font-semibold">Prifix</th>
               <th className="px-4 py-3 font-semibold">First Name</th>
               <th className="px-4 py-3 font-semibold">Last Name</th>
@@ -1064,6 +1019,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
             {filteredStudents.map((s, i) => (
               <tr key={s.id} className={`hover:bg-blue-50/50 ${s.status === STATUSES.COMPLETE ? 'bg-purple-50/10' : ''}`}>
                 <td className="px-4 py-3"><Badge status={s.status} /></td>
+                <td className="px-4 py-3 font-bold text-blue-600">{s.studentId}</td>
                 <td className="px-4 py-3 text-slate-600">{s.prefix}</td>
                 <td className="px-4 py-3 font-medium text-slate-900">{s.firstName}</td>
                 <td className="px-4 py-3 font-medium text-slate-900">{s.lastName}</td>
@@ -1206,6 +1162,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
           <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+              <div><label className="block text-sm font-medium mb-1">Student ID (Username)</label><input type="text" name="studentId" defaultValue={student.studentId} disabled={isStudent || isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50" required/></div>
               <div ><label className="block text-sm font-medium mb-1">Prefix</label>
               <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 <option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option>
@@ -1474,21 +1431,6 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
               
               {/* Action Buttons based on Workflow */}
               <div className="flex flex-col gap-2 w-full lg:w-48 lg:shrink-0">
-                
-                {/* ปุ่มมอบสิทธิ์ให้นักศึกษา (Assign Student) */}
-                {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser?.role) && (
-                  <button 
-                    onClick={() => onAssignStudent(student.id, student.createdBy)}
-                    className={`w-full px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-center gap-1 border mb-2 ${
-                      isAssignedToStudent 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' // สีเขียวถ้ามีการมอบสิทธิ์แล้ว
-                        : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'     // สีม่วงถ้ายังเป็นของ Staff
-                    }`}
-                  >
-                    <UserPlus size={14} /> 
-                    {isAssignedToStudent ? `Assigned: ${student.createdBy}` : 'Assign to Student'}
-                  </button>
-                )}
 
                 {availableActions.length > 0 && (
                   <div className="flex flex-col gap-2">
@@ -1572,8 +1514,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
     const username = e.target.username.value;
     const password = e.target.password.value;
     const name = e.target.name.value;
-    const role = e.target.role.value;
-    const faculty = e.target.faculty.value;
+    const role = currentUser.role === 'facultyCoordinator' ? 'student' : e.target.role.value;
+    const faculty = currentUser.role === 'facultyCoordinator' ? currentUser.faculty : e.target.faculty.value;
 
     if (!username || !password || !name || !role || !faculty) {
       setError('Please complete all required fields.');
@@ -1646,6 +1588,9 @@ function UserManagementView({ users, setUsers ,currentUser}) {
   };
   //สร้างตัวแปรเก็บข้อมูล User ที่ผ่านการกรองแล้ว
   const filteredUsers = Object.values(users).filter(user => {
+    if (currentUser.role === 'facultyCoordinator') {
+      if (user.faculty !== currentUser.faculty || user.role !== 'student') return false;
+    }
     const searchLower = searchTerm.toLowerCase();
     return (
       user.name.toLowerCase().includes(searchLower) ||
@@ -1707,6 +1652,8 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
             <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
+          {currentUser.role === 'admin' ? (
+            <>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
             <select name="role" defaultValue={editingUser?.role || 'admin'} 
@@ -1724,7 +1671,16 @@ function UserManagementView({ users, setUsers ,currentUser}) {
               {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
-
+          </>
+          ) : (
+            <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
+                <select disabled className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 text-slate-500">
+                  <option>Student</option>
+                </select>
+            </div>
+          )}
+          
           <button type="submit" className={`font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px] text-white ${editingUser ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
             {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
           </button>
