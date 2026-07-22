@@ -792,6 +792,12 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
           <div className="space-y-6">
             
+           {/* Section 4: Document Attachments */}
+        {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
+        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
+          <div className="space-y-6">
+            
             {/* 4.1 Faculty Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
               <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
@@ -800,15 +806,14 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">
+                   {/* ลบการเช็คตัวแปร student ออกไปแล้ว */}
+                   <label className="block text-sm font-medium text-slate-700 mb-2">
                      Document Link (URL) 
-                     {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
                      type="url" 
                      name="facultyScholarshipFileName" 
-                     defaultValue={student.facultyScholarshipFileName} 
-                     disabled={isStudent || isUni} 
+                     disabled={currentUser.role === 'student'} 
                      placeholder="https://..."
                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                    />
@@ -819,8 +824,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
                    <input 
                      type="number" 
                      name="facultyScholarshipAmount" 
-                     defaultValue={student.facultyScholarshipAmount} 
-                     disabled={isStudent || isUni} 
+                     disabled={currentUser.role === 'student'} 
                      placeholder="e.g. 50000"
                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
                    />
@@ -836,15 +840,14 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">
+                   {/* ลบการเช็คตัวแปร student ออกไปแล้ว */}
+                   <label className="block text-sm font-medium text-slate-700 mb-2">
                      Document Link (URL)
-                     {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
                      type="url" 
                      name="uniScholarshipFileName"
-                     defaultValue={student.uniScholarshipFileName} 
-                     disabled={isStudent || isFac} 
+                     disabled={currentUser.role === 'student'} 
                      placeholder="https://..."
                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                    />
@@ -855,8 +858,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
                    <input 
                      type="number" 
                      name="uniScholarshipAmount" 
-                     defaultValue={student.uniScholarshipAmount} 
-                     disabled={isStudent || isFac}
+                     disabled={currentUser.role === 'student'}
                      placeholder="e.g. 50000"
                      className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
                    />
@@ -864,6 +866,10 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               </div>
             </div>
 
+          </div>
+        </div>
+        )}
+            
           </div>
         </div>
         )}
