@@ -423,8 +423,6 @@ export default function App() {
     if (studentToDelete) {
       // สร้าง Array เก็บ URL ของไฟล์ทั้ง 4 ชนิด
       const filesToDelete = [
-        studentToDelete.projectPdfFileName,       // ไฟล์ Presentation
-        studentToDelete.projectReportFileName,    // ไฟล์ Full Report Book
         studentToDelete.facultyScholarshipFileName, // ไฟล์ขอทุนคณะ
         studentToDelete.uniScholarshipFileName      // ไฟล์ขอทุนมหาลัย
       ];
@@ -1550,8 +1548,6 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                         <strong className="text-purple-800">Project: {student.projectName || 'Not submitted yet'}</strong>                      </div>
                       <p className="text-slate-600 italic">"{student.projectDescription}"</p>
                       <div className="flex gap-2 flex-wrap mt-1">
-                         {student.projectPdfFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectPdfFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Presentation</a>}
-                         {student.projectReportFileName && <a href={`/api/download?url=${encodeURIComponent(student.projectReportFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-purple-700 bg-purple-100 hover:bg-purple-200 border border-purple-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Download size={14}/> Report Book</a>}
                          {student.projectDrive && <a href={student.projectDrive.startsWith('http') ? student.projectDrive : `https://${student.projectDrive}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Project Drive</a>}
                          {student.reportDrive && <a href={student.reportDrive.startsWith('http') ? student.reportDrive : `https://${student.reportDrive}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Report Drive</a>}
                       </div>
