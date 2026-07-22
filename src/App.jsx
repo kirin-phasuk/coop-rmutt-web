@@ -792,19 +792,21 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm mb-4 flex items-start gap-6">
             <div className="w-32 h-40 shrink-0 bg-slate-100 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center overflow-hidden relative">
               {imageUrl ? (
-                <img 
-            src={student.profileImage.startsWith('http') ? student.profileImage : `https://${student.profileImage}`} 
-            alt="Profile" 
-            className="w-full h-full object-cover" 
-            onError={(e) => {
-              // ถ้ารูปพัง (403 หรือ 404) ให้โชว์รูปสำรองแทน จะได้ไม่ Error แดง
-              e.target.onerror = null;
-              e.target.src = "https://placehold.co/150x200/f8fafc/94a3b8?text=Image+Error";
-            }}
-          />
-        ) : (
-          <span className="text-[10px] text-gray-400 text-center leading-tight">รูปถ่าย<br/>1 x 1.5 นิ้ว</span>
-        )}
+              <img 
+                src={imageUrl.startsWith('http') ? imageUrl : `https://${imageUrl}`} 
+                alt="Profile" 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://placehold.co/150x200/f8fafc/94a3b8?text=Image+Error";
+                }}
+              />
+            ) : (
+              <div className="text-center text-slate-400 p-2">
+                <Upload size={24} className="mx-auto mb-1 opacity-50" />
+                <span className="text-[10px]">1 x 1.5 inch</span>
+              </div>
+            )}
               {isUploadingImg && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-blue-600">Uploading...</div>}
             </div>
             <div className="flex-1">
@@ -1253,19 +1255,18 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm mb-4 flex items-start gap-6">
           <div className="w-32 h-40 shrink-0 bg-slate-100 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center overflow-hidden relative">
             {imageUrl ? (
-             <img 
-            src={student.profileImage.startsWith('http') ? student.profileImage : `https://${student.profileImage}`} 
-            alt="Profile" 
-            className="w-full h-full object-cover" 
-            onError={(e) => {
-              // ถ้ารูปพัง (403 หรือ 404) ให้โชว์รูปสำรองแทน จะได้ไม่ Error แดง
-              e.target.onerror = null;
-              e.target.src = "https://placehold.co/150x200/f8fafc/94a3b8?text=Image+Error";
-            }}
-          />
-        ) : (
-          <span className="text-[10px] text-gray-400 text-center leading-tight">รูปถ่าย<br/>1 x 1.5 นิ้ว</span>
-        )}
+              <img 
+                src={imageUrl.startsWith('http') ? imageUrl : `https://${imageUrl}`} 
+                alt="Profile" 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://placehold.co/150x200/f8fafc/94a3b8?text=Image+Error";
+                }}
+              />
+            ) : (
+              <span className="text-[10px] text-gray-400 text-center leading-tight">รูปถ่าย<br/>1 x 1.5 นิ้ว</span>
+            )}
             {isUploadingImg && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-blue-600">Uploading...</div>}
           </div>
           <div className="flex-1">
