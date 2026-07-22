@@ -793,7 +793,8 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
             <div className="w-32 h-40 shrink-0 bg-slate-100 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center overflow-hidden relative">
               {imageUrl ? (
               <img 
-                src={imageUrl.startsWith('http') ? imageUrl : `https://${imageUrl}`} 
+                // ✅ เรียกผ่าน Proxy api/download และเข้ารหัส URL
+                src={`/api/download?url=${encodeURIComponent(imageUrl)}`} 
                 alt="Profile" 
                 className="w-full h-full object-cover" 
                 onError={(e) => {
@@ -1256,7 +1257,8 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           <div className="w-32 h-40 shrink-0 bg-slate-100 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center overflow-hidden relative">
             {imageUrl ? (
               <img 
-                src={imageUrl.startsWith('http') ? imageUrl : `https://${imageUrl}`} 
+                // ✅ เรียกผ่าน Proxy api/download และเข้ารหัส URL
+                src={`/api/download?url=${encodeURIComponent(imageUrl)}`} 
                 alt="Profile" 
                 className="w-full h-full object-cover" 
                 onError={(e) => {
@@ -2084,11 +2086,11 @@ function PrintApplicationForm({ student }) {
       <div className="absolute top-[20mm] right-[15mm] w-[30mm] h-[40mm] border border-gray-400 flex items-center justify-center overflow-hidden bg-gray-50">
         {student.profileImage ? (
           <img 
-            src={student.profileImage.startsWith('http') ? student.profileImage : `https://${student.profileImage}`} 
+            // ✅ เรียกผ่าน Proxy api/download เหมือนกัน
+            src={`/api/download?url=${encodeURIComponent(student.profileImage)}`} 
             alt="Profile" 
             className="w-full h-full object-cover" 
             onError={(e) => {
-              // ถ้ารูปพัง (403 หรือ 404) ให้โชว์รูปสำรองแทน จะได้ไม่ Error แดง
               e.target.onerror = null;
               e.target.src = "https://placehold.co/150x200/f8fafc/94a3b8?text=Image+Error";
             }}
