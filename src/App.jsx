@@ -738,20 +738,6 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
     if (currentUser.role === 'facultyCoordinator') {
       data.faculty = currentUser.faculty;
     }
-    
-    // ดึงตัว File Object ออกมาจากฟอร์มให้ถูกต้อง
-    const facFile = formData.get('facultyScholarshipFile');
-    // อัปโหลด Faculty File
-    if (facFile && facFile.size > 0) {data.facultyScholarshipFileName = await uploadFileToCloud(facFile);} 
-    else {data.facultyScholarshipFileName = null;}
-    delete data.facultyScholarshipFile; 
-    
-    // ดึงตัว File Object ออกมาจากฟอร์มให้ถูกต้อง
-    const uniFile = formData.get('uniScholarshipFile');
-    // อัปโหลด Uni File
-    if (uniFile && uniFile.size > 0) {data.uniScholarshipFileName = await uploadFileToCloud(uniFile);} 
-    else { data.uniScholarshipFileName = null;}
-    delete data.uniScholarshipFile;
 
     // Required fields base on Student
     const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
@@ -873,7 +859,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="file" name="facultyScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="url" name="facultyScholarshipFile" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -890,7 +876,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="file" name="uniScholarshipFile" accept=".pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="url" name="uniScholarshipFile" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -1098,13 +1084,13 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
                 <td className="px-4 py-3 text-center print:hidden">
                   <div className="flex flex-col gap-1.5 items-center justify-center">
                     {s.facultyScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(s.facultyScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">
-                        <Download size={12} /> Faculty
+                      <a href={s.facultyScholarshipFileName.startsWith('http') ? s.facultyScholarshipFileName : `https://${s.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-blue-200">                        
+                      <Download size={12} /> Faculty
                       </a>
                     )}
                     {s.uniScholarshipFileName && (
-                      <a href={`/api/download?url=${encodeURIComponent(s.uniScholarshipFileName)}`}  target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">
-                        <Download size={12} /> University
+                      <a href={s.uniScholarshipFileName.startsWith('http') ? s.uniScholarshipFileName : `https://${s.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded flex items-center gap-1 transition-colors w-full justify-center border border-emerald-200">                        
+                      <Download size={12} /> University
                       </a>
                     )}
                     {(!s.facultyScholarshipFileName && !s.uniScholarshipFileName ) && (
@@ -1155,9 +1141,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   const isUni = currentUser.role === 'universityCoordinator';
   const isAdmin = currentUser.role === 'admin';
 
-  const canEditFacEval = isAdmin || isFac; // มีแค่ Admin และคณะที่แก้คะแนนคณะได้
-  const canEditUniEval = isAdmin || isUni; // มีแค่ Admin และมหาลัยที่แก้คะแนนมหาลัยได้
-
   const isCompleteProgress = [STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status);
 
   const handleSubmit = async (e) => {
@@ -1174,18 +1157,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         data[key] = student[key];
       }
     });
-
-    const facFile = formData.get('facultyScholarshipFile');
-    const uniFile = formData.get('uniScholarshipFile');
-    
-    // File Uploads
-    if (facFile && facFile.size > 0) data.facultyScholarshipFileName = await uploadFileToCloud(facFile);
-    else data.facultyScholarshipFileName = student.facultyScholarshipFileName || null;
-    delete data.facultyScholarshipFile; 
-
-    if (uniFile && uniFile.size > 0) data.uniScholarshipFileName = await uploadFileToCloud(uniFile);
-    else data.uniScholarshipFileName = student.uniScholarshipFileName || null;
-    delete data.uniScholarshipFile;
 
     const requiredFields = ['prefix', 'firstName', 'lastName', 'gpax', 'engTest', 'faculty', 'company', 'country', 'position', 'year', 'semester', 'departureDate', 'startDate', 'endDate', 'returnDate'];
     let isComplete = true;
@@ -1292,54 +1263,25 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
           <div className="space-y-6">
             
-            {/* 4.1 Faculty Scholarship */}
+           {/* 4.1 Faculty Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
+              <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
+                <Banknote size={16} className="text-emerald-600"/> 1. Faculty Scholarship Request
+              </h5>
               
-              {/* --- ส่วน Header & ปุ่ม Action (จัดให้อยู่ซ้าย-ขวา) --- */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                <h5 className="font-medium text-slate-800 flex items-center gap-2">
-                  <Banknote size={16} className="text-emerald-600"/> 1. Faculty Scholarship Request
-                </h5>
-                
-                {/* กลุ่มปุ่ม View / Download / Delete ย้ายมาอยู่มุมขวาบนตรงนี้ */}
-                {student.facultyScholarshipFileName && (
-                  <div className="flex items-center gap-2">
-                    {/* ปุ่ม View / Download */}
-                    <a 
-                      href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5 font-medium hover:bg-blue-100 transition-colors"
-                    >
-                      <Download size={14}/> View & Download
-                    </a>
-                    
-                    {/* ปุ่ม Delete */}
-                    {canEditFacEval && (
-                      <button 
-                        type="button" 
-                        onClick={() => onDeleteFile(student.id, 'facultyScholarshipFileName', student.facultyScholarshipFileName)} 
-                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" 
-                        title="Delete File"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-              {/* ---------------------------------------------------- */}
-
-              {/* --- ส่วน Input (แบ่ง 2 คอลัมน์ ซ้าย-ขวา) --- */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">
+                     Document Link (URL) 
+                     {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
+                   </label>
                    <input 
-                     type="file" 
-                     name="facultyScholarshipFile" 
-                     accept=".pdf" 
+                     type="url" 
+                     name="facultyScholarshipFileName" 
+                     defaultValue={student.facultyScholarshipFileName} 
                      disabled={isStudent || isUni} 
-                     className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#eff6ff] file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer"
+                     placeholder="https://..."
+                     className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                    />
                  </div>
                  
@@ -1351,11 +1293,10 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                      defaultValue={student.facultyScholarshipAmount} 
                      disabled={isStudent || isUni} 
                      placeholder="e.g. 50000"
-                     className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                     className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
                    />
                  </div>
               </div>
-              
             </div>
             
             {/* 4.2 University Scholarship */}
@@ -1366,39 +1307,13 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                 <h5 className="font-medium text-slate-800 flex items-center gap-2">
                   <Banknote size={16} className="text-emerald-600"/> 2. University Scholarship Request
                 </h5>
-                
-                {/* กลุ่มปุ่ม View / Download / Delete ย้ายมาอยู่มุมขวาบนตรงนี้ */}
-                {student.uniScholarshipFileName && (
-                  <div className="flex items-center gap-2">
-                    {/* ปุ่ม View / Download */}
-                    <a 
-                      href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-xs text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5 font-medium hover:bg-blue-100 transition-colors"
-                    >
-                      <Download size={14}/> View & Download
-                    </a>
-                    
-                    {/* ปุ่ม Delete */}
-                    {canEditUniEval && (
-                      <button 
-                        type="button" 
-                        onClick={() => onDeleteFile(student.id, 'uniScholarshipFileName', student.uniScholarshipFileName)} 
-                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md border border-red-200 transition-colors" 
-                        title="Delete File"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
 
-              {/* --- ส่วน Input (แบ่ง 2 คอลัมน์ ซ้าย-ขวา) --- */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">Document Link (URL)
+                    {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
+                   </label>
                    <input 
                      type="file" 
                      name="uniScholarshipFile"
@@ -1537,15 +1452,15 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                   <p><strong>Position:</strong> {student.position}</p>
                   <p><strong>Academic Record:</strong> GPAX {student.gpax} | {student.engTest}</p>
                   <p><strong>Duration:</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>
-                  <p><strong>Faculty Scholarship:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName} target="_blank" className="text-blue-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
-                  <p><strong>University Scholarship:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName} target="_blank" className="text-emerald-600 border px-1 rounded ml-1 text-xs">PDF</a>}</p>
+                  <p><strong>Faculty Scholarship:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 border px-1 rounded ml-1 text-xs hover:underline">Link</a>}</p>
+                  <p><strong>University Scholarship:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 border px-1 rounded ml-1 text-xs hover:underline">Link</a>}</p>
                 </div>
                  {/* Project Sneak Peek */}
                 {[STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status) && student.projectName && (
                   <div className="mt-3 p-4 bg-purple-50/50 rounded border border-purple-200 text-sm">
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-center">
-                        <strong className="text-purple-800">Project: {student.projectName || 'Not submitted yet'}</strong>                      </div>
+                        <strong className="text-purple-800">Project: {student.projectName || 'Not submitted yet'}</strong></div>
                       <p className="text-slate-600 italic">"{student.projectDescription}"</p>
                       <div className="flex gap-2 flex-wrap mt-1">
                          {student.projectDrive && <a href={student.projectDrive.startsWith('http') ? student.projectDrive : `https://${student.projectDrive}`}  target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 font-medium transition-colors"><Globe2 size={14}/> Project Drive</a>}
@@ -1609,7 +1524,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                 )}
                 {student.facultyScholarshipFileName && (
                   <a 
-                    href={`/api/download?url=${encodeURIComponent(student.facultyScholarshipFileName)}`} 
+                    href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`}
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
@@ -1619,7 +1534,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                 )}
                 {student.uniScholarshipFileName && (
                   <a 
-                    href={`/api/download?url=${encodeURIComponent(student.uniScholarshipFileName)}`}
+                    href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`}
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition-colors"
