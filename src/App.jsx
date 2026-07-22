@@ -516,7 +516,7 @@ export default function App() {
           {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent}/>}
           {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
           {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser} onDeleteFile={handleDeleteFile}/>}
-          {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser} onAssignStudent={handleAssignStudent} users={users}/>}
+          {activeTab === 'approval' && <ApprovalView students={students} onUpdateStatus={handleUpdateStatus} currentUser={currentUser}  users={users}/>}
           {activeTab === 'users' && <UserManagementView users={users} setUsers={setUsers} currentUser={currentUser}/>}
           {activeTab === 'guide' && <GuideView currentUser={currentUser} />}
         </div>
@@ -1653,7 +1653,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           {currentUser.role === 'admin' ? (
-            <>
+          <>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
             <select name="role" defaultValue={editingUser?.role || 'admin'} 
@@ -1680,7 +1680,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                 </select>
             </div>
           )}
-          
+
           <button type="submit" className={`font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px] text-white ${editingUser ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
             {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
           </button>
