@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import imageCompression from 'browser-image-compression';
 import { 
   Users, LayoutDashboard, LogOut, PlusCircle, CheckSquare, FileSpreadsheet, 
   Clock, CheckCircle2, AlertCircle, Building, GraduationCap, Plane, Save, 
@@ -229,6 +230,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard'); 
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentToDelete, setStudentToDelete] = useState(null); 
+  const [printingStudent, setPrintingStudent] = useState(null);
 
   const studentHasRecord = currentUser?.role === 'student' && students.some(s => s.studentId === currentUser?.username);
 
@@ -287,6 +289,28 @@ export default function App() {
       return null;
     }
   };
+
+  const handleImageUpload = async (event) => {
+  const imageFile = event.target.files[0];
+  
+  // ตั้งค่าการบีบอัด
+  const options = {
+    maxSizeMB: 0.5,         // บังคับขนาดไฟล์สูงสุดไม่เกิน 500 KB (0.5 MB)
+    maxWidthOrHeight: 800,  // บังคับความกว้างหรือสูงไม่เกิน 800px
+    useWebWorker: true,     // ให้บีบอัดเบื้องหลัง หน้าเว็บจะได้ไม่กระตุก
+  };
+
+  try {
+    // โค้ดจะทำการบีบอัดไฟล์ให้ตรงตามเงื่อนไขด้านบน
+    const compressedFile = await imageCompression(imageFile, options);
+    
+    // แล้วเราค่อยเอา compressedFile ไปส่งขึ้น Cloud ด้วยฟังก์ชันที่มีอยู่แล้ว
+    const fileUrl = await uploadFileToCloud(compressedFile); 
+    
+  } catch (error) {
+    console.error("Compression error:", error);
+  }
+}
   
   //Delete Fac&UniDocFile
   const handleDeleteFile = async (studentId, fileField, fileUrl) => {
@@ -513,6 +537,7 @@ export default function App() {
 
         <div className="flex-1 overflow-auto p-4 md:p-8 print:p-0 print:overflow-visible print:block">
           {activeTab === 'dashboard' && <DashboardView students={students} />}
+          {activeTab === 'printForm' && <PrintApplicationForm student={printingStudent} onBack={() => { setActiveTab('list'); setPrintingStudent(null); }} />}
           {activeTab === 'list' && <StudentListView students={students} currentUser={currentUser} onEdit={(student) => { setEditingStudent(student); setActiveTab('edit'); }} onDelete={handleDeleteStudent}/>}
           {activeTab === 'entry' && <DataEntryView onSubmit={handleAddStudent} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser}/>}
           {activeTab === 'edit' && <EditStudentView student={editingStudent} onUpdate={handleUpdateStudent} onCancel={() => { setActiveTab('list'); setEditingStudent(null); }} uploadFileToCloud={uploadFileToCloud} currentUser={currentUser} onDeleteFile={handleDeleteFile}/>}
@@ -679,6 +704,26 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [isUploadingImg, setIsUploadingImg] = useState(false);
+
+  // ฟังก์ชันจัดการรูปภาพ
+  const onImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingImg(true);
+    try {
+      const options = { maxSizeMB: 0.2, maxWidthOrHeight: 600, useWebWorker: true };
+      const compressedFile = await imageCompression(file, options);
+      const url = await uploadFileToCloud(compressedFile);
+      if(url) setImageUrl(url);
+    } catch (error) {
+      console.error("Image upload error:", error);
+      alert("Failed to upload image.");
+    } finally {
+      setIsUploadingImg(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -711,6 +756,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
 
     data.year = parseInt(data.year, 10);
     data.semester = parseInt(data.semester, 10);
+    data.profileImage = imageUrl; // แนบลิงก์รูปลงไปใน data
     await onSubmit(data); 
     setError('');
     setSuccess('Record successfully saved and submitted.');
@@ -742,6 +788,25 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
       )}
       
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* กล่องอัปโหลดรูปภาพ */}
+          <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm mb-4 flex items-start gap-6">
+            <div className="w-32 h-40 shrink-0 bg-slate-100 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center overflow-hidden relative">
+              {imageUrl ? (
+                <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center text-slate-400 p-2">
+                  <Upload size={24} className="mx-auto mb-1 opacity-50" />
+                  <span className="text-[10px]">1 x 1.5 inch</span>
+                </div>
+              )}
+              {isUploadingImg && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-blue-600">Uploading...</div>}
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Profile Picture (รูปถ่ายหน้าตรง)</label>
+              <input type="file" accept="image/*" onChange={onImageChange} disabled={isUploadingImg} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+              <p className="text-xs text-slate-400 mt-2">Recommended: .jpg, .png (Max 5MB). The system will automatically compress the image to save storage.</p>
+            </div>
+          </div>
         
         {/* Section 1: Personal Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
@@ -852,7 +917,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   );
 }
 
-function StudentListView({ students , currentUser, onEdit , onDelete}) {
+function StudentListView({ students , currentUser, onEdit , onDelete, onPrintForm}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [yearFilter, setYearFilter] = useState('ALL');
@@ -984,7 +1049,20 @@ function StudentListView({ students , currentUser, onEdit , onDelete}) {
         </div>
       </div>
 
-      <div className="hidden print:block p-4 mb-4 text-center border-b border-slate-200">
+      <div className="overflow-x-auto flex-1 print:hidden">
+        <table className="w-full text-sm text-left whitespace-nowrap">
+           {/* ... โค้ด <thead> และ <tbody> ตารางอยู่เหมือนเดิมทุกอย่าง ... */}
+        </table>
+      </div>
+
+      {/* 2. เพิ่มส่วนนี้ต่อท้ายตาราง (จะโชว์เฉพาะตอน Print เท่านั้น) */}
+      <div className="hidden print:block w-full bg-white">
+        {filteredStudents.map((student) => (
+          /* break-after-page จะสั่งให้ปริ้นเตอร์ขึ้นหน้าใหม่เสมอเมื่อจบ 1 คน */
+          <div key={student.id} className="break-after-page">
+            <PrintApplicationForm student={student} />
+          </div>
+        ))}
         <h2 className="text-2xl font-bold text-slate-900">International Cooperative Education Student Report</h2>
         <p className="text-slate-600 mt-2">Printed on: {new Date().toLocaleDateString('en-US')}</p>
       </div>
@@ -1090,6 +1168,8 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAction, setSubmitAction] = useState('update');
+  const [imageUrl, setImageUrl] = useState(student?.profileImage || '');
+  const [isUploadingImg, setIsUploadingImg] = useState(false);
   // Role Checks
   if (!student) return null;
   const isStudent = currentUser.role === 'student';
@@ -1098,6 +1178,24 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   const isAdmin = currentUser.role === 'admin';
 
   const isCompleteProgress = [STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status);
+
+  // ฟังก์ชันจัดการรูปภาพ
+  const onImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingImg(true);
+    try {
+      const options = { maxSizeMB: 0.2, maxWidthOrHeight: 600, useWebWorker: true };
+      const compressedFile = await imageCompression(file, options);
+      const url = await uploadFileToCloud(compressedFile);
+      if(url) setImageUrl(url);
+    } catch (error) {
+      console.error("Image upload error:", error);
+      alert("Failed to upload image.");
+    } finally {
+      setIsUploadingImg(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1136,7 +1234,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
     if (submitAction === 'submitProject') {
       data.status = STATUSES.PROJ_SUBMITTED;
     }
-
+    data.profileImage = imageUrl;
     await onUpdate(student.id, data);
     setIsSubmitting(false);
   };
@@ -1950,6 +2048,84 @@ function LoginScreen({ onLogin }) {
           </form>
           
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PrintApplicationForm({ student }) {
+  if (!student) return null;
+
+  return (
+    <div className="w-[210mm] min-h-[297mm] p-[15mm] bg-white text-black font-sans relative mx-auto box-border">
+      
+      {/* รูปโปรไฟล์ขวาบน */}
+      <div className="absolute top-[20mm] right-[15mm] w-[30mm] h-[40mm] border border-gray-400 flex items-center justify-center overflow-hidden bg-gray-50">
+        {student.profileImage ? (
+          <img src={student.profileImage} alt="Profile" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-[10px] text-gray-400 text-center leading-tight">รูปถ่าย<br/>1 x 1.5 นิ้ว</span>
+        )}
+      </div>
+
+      {/* ส่วนหัว */}
+      <div className="flex items-center gap-4 border-b border-black pb-4 mb-6">
+         {/* โลโก้ มทร. (ใช้สไตล์บังคับสีให้โชว์ตอนปริ้น) */}
+         <div 
+            className="w-16 h-16 rounded-full flex items-center justify-center font-bold text-xs text-center shrink-0" 
+            style={{ backgroundColor: '#ea580c', color: 'white', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+         >
+            RMUTT<br/>LOGO
+         </div>
+         <div>
+            <h1 className="text-xl font-bold">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
+         </div>
+         <div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>
+      </div>
+
+      <h2 className="text-2xl font-bold text-center mb-8">ใบสมัครงาน</h2>
+
+      {/* ส่วนข้อมูล */}
+      <div className="space-y-6 text-sm leading-relaxed">
+        
+        <div className="flex items-end gap-2">
+          <span className="whitespace-nowrap">ชื่อสถานประกอบการที่ต้องการสมัคร (Name of employer)</span>
+          <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.company || '-'}</span>
+        </div>
+
+        <div className="flex items-end gap-2">
+          <span className="whitespace-nowrap">ระยะเวลาปฏิบัติงาน (Period of work) จาก</span>
+          <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.startDate ? new Date(student.startDate).toLocaleDateString('th-TH') : '-'}</span>
+          <span className="whitespace-nowrap">ถึง</span>
+          <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.endDate ? new Date(student.endDate).toLocaleDateString('th-TH') : '-'}</span>
+        </div>
+
+        <h3 className="font-bold text-base mt-8 italic">ข้อมูลส่วนตัวนักศึกษา (Student personal data)</h3>
+        
+        <div className="flex items-end gap-2">
+          <span className="whitespace-nowrap">ชื่อ-นามสกุล</span>
+          <span className="border-b border-dotted border-black flex-1 text-blue-800 px-2">{student.prefix}{student.firstName} {student.lastName}</span>
+        </div>
+
+        <div className="flex items-end gap-2">
+          <span className="whitespace-nowrap">รหัสนักศึกษา (Student identification No.)</span>
+          <span className="border-b border-dotted border-black px-4 text-center text-blue-800">{student.studentId || '-'}</span>
+          <span className="whitespace-nowrap">สาขาวิชา/คณะ (School)</span>
+          <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.faculty || '-'}</span>
+        </div>
+
+        <div className="flex items-end gap-2">
+          <span className="whitespace-nowrap">เกรดเฉลี่ยสะสม (GPAX)</span>
+          <span className="border-b border-dotted border-black w-32 text-center text-blue-800">{student.gpax || '-'}</span>
+          <span className="whitespace-nowrap">คะแนนภาษาอังกฤษ</span>
+          <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.engTest || '-'}</span>
+        </div>
+        
+        <div className="flex items-end gap-2">
+          <span className="whitespace-nowrap">ที่อยู่ในภาคการศึกษานี้</span>
+          <span className="border-b border-dotted border-black flex-1"></span>
+        </div>
+
       </div>
     </div>
   );
