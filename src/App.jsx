@@ -792,12 +792,6 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
           <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
           <div className="space-y-6">
             
-           {/* Section 4: Document Attachments */}
-        {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
-        <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
-          <div className="space-y-6">
-            
             {/* 4.1 Faculty Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
               <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
@@ -866,10 +860,6 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               </div>
             </div>
 
-          </div>
-        </div>
-        )}
-            
           </div>
         </div>
         )}
