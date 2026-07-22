@@ -1263,7 +1263,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">
                      Document Link (URL) 
-                     {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
                      type="url" 
@@ -1299,7 +1298,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">
                      Document Link (URL)
-                     {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
                      type="url" 
