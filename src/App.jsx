@@ -859,7 +859,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="url" name="facultyScholarshipFile" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="url" name="facultyScholarshipFileName" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -876,7 +876,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
-                   <input type="url" name="uniScholarshipFile" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
+                   <input type="url" name="uniScholarshipFileName" placeholder="https://..." className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
@@ -1315,11 +1315,12 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                     {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
-                     type="file" 
-                     name="uniScholarshipFile"
-                     accept=".pdf" 
+                     type="url" 
+                     name="uniScholarshipFileName"
+                     defaultValue={student.uniScholarshipFileName} 
                      disabled={isStudent || isFac} 
-                     className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#eff6ff] file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer"
+                     placeholder="https://..."
+                     className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                    />
                  </div>
                  
