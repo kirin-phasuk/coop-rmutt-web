@@ -2116,12 +2116,12 @@ function PrintApplicationForm({ student }) {
         </style>
 
       {/* ส่วนหัว */}
-      <div className="flex items-center gap-8 pb-4 mb-6">
+      <div className="flex items-center gap-2 pb-4 mb-4">
          {/* โลโก้ มทร. ของจริง */}
          <img 
             src="/logoRMUTT-color.png" 
             alt="RMUTT Logo" 
-            className="w-16 h-16 object-contain shrink-0" 
+            className="w-20 h-20 object-contain shrink-0" 
          />
          <div>
             <h1 className="text-lg">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
