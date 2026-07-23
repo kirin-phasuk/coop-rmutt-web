@@ -2116,7 +2116,7 @@ function PrintApplicationForm({ student }) {
         </style>
 
       {/* ส่วนหัว */}
-      <div className="flex items-center gap-4 pb-4 mb-6">
+      <div className="flex items-center gap-8 pb-4 mb-6">
          {/* โลโก้ มทร. ของจริง */}
          <img 
             src="/logoRMUTT-color.png" 
@@ -2124,11 +2124,11 @@ function PrintApplicationForm({ student }) {
             className="w-16 h-16 object-contain shrink-0" 
          />
          <div>
-            <h1 className="text-xl">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
+            <h1 className="text-lg">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
          </div>
          {/*<div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>*/}
       </div>
-      <div className='mt-8'>
+      <div className='mb-8'>
         <h2 className="font-bold text-center">ใบสมัครงาน</h2>
         <h5 className="text-center">(Job application form)</h5>
       </div>
