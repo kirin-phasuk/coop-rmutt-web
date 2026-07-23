@@ -2138,6 +2138,9 @@ function PrintApplicationForm({ student }) {
         <div className="flex items-end gap-2">
           <span className="whitespace-nowrap">ชื่อ-นามสกุล (Full Name)</span>
           <span className="border-b border-dotted border-black flex-1 text-blue-800 px-2">{student.prefix}{student.firstName} {student.lastName}</span>
+        </div>
+
+        <div className="flex items-end gap-2">
           <span className="whitespace-nowrap">รหัสนักศึกษา (Student identification No.)</span>
           <span className="border-b border-dotted border-black px-4 text-center text-blue-800">{student.studentId || '-'}</span>
         </div>
