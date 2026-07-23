@@ -467,8 +467,9 @@ export default function App() {
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 print:h-auto print:block">
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-10 flex-shrink-0 print:hidden">
-        <div className="p-6 border-b border-slate-800">
-          <h1 className="text-xl font-bold text-white leading-tight">RMUTT CWIE International<br/></h1>
+        <div className="p-5 border-b border-slate-800 flex items-center gap-3">
+          <img src="/logoRMUTT-color.png" alt="RMUTT Logo" className="w-10 h-10 object-contain shrink-0" />
+          <h1 className="text-lg md:text-xl font-bold text-white leading-tight">RMUTT CWIE<br/>International</h1>
         </div>
         
         <div className="p-4 border-b border-slate-800 bg-slate-800/50">
@@ -2102,13 +2103,12 @@ function PrintApplicationForm({ student }) {
 
       {/* ส่วนหัว */}
       <div className="flex items-center gap-4 border-b border-black pb-4 mb-6">
-         {/* โลโก้ มทร. (ใช้สไตล์บังคับสีให้โชว์ตอนปริ้น) */}
-         <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center font-bold text-xs text-center shrink-0" 
-            style={{ backgroundColor: '#ea580c', color: 'white', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
-         >
-            RMUTT<br/>LOGO
-         </div>
+         {/* โลโก้ มทร. ของจริง */}
+         <img 
+            src="/logoRMUTT-color.png" 
+            alt="RMUTT Logo" 
+            className="w-16 h-16 object-contain shrink-0" 
+         />
          <div>
             <h1 className="text-xl font-bold">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
          </div>
@@ -2151,11 +2151,6 @@ function PrintApplicationForm({ student }) {
           <span className="border-b border-dotted border-black w-32 text-center text-blue-800">{student.gpax || '-'}</span>
           <span className="whitespace-nowrap">คะแนนภาษาอังกฤษ</span>
           <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.engTest || '-'}</span>
-        </div>
-        
-        <div className="flex items-end gap-2">
-          <span className="whitespace-nowrap">ที่อยู่ในภาคการศึกษานี้</span>
-          <span className="border-b border-dotted border-black flex-1"></span>
         </div>
 
       </div>
