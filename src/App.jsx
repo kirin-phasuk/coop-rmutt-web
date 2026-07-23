@@ -2148,6 +2148,7 @@ function PrintApplicationForm({ student }) {
          />
          <div>
             <h1 className="text-lg">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
+            <h3 className="text-lg">Rajamangala University of Technology Thanyaburi</h3>
          </div>
          {/*<div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>*/}
       </div>
