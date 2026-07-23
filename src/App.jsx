@@ -2110,7 +2110,7 @@ function PrintApplicationForm({ student }) {
             className="w-16 h-16 object-contain shrink-0" 
          />
          <div>
-            <h1 className="text-xl font-semibold">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
+            <h1 className="text-xl">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
          </div>
          {/*<div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>*/}
       </div>
