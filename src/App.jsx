@@ -608,17 +608,17 @@ function DashboardView({ students }) {
     <div className="max-w-full mx-auto space-y-6">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <StatCard title="Total Records" value={stats.total} icon={<Users />} gradient="from-slate-500 to-slate-600" />
-        <StatCard title="Submitted" value={stats.submitted} icon={<Clock />} gradient="from-yellow-400 to-amber-500" />
-        <StatCard title="In Progress Faculty" value={stats.inProgress_Fac} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
-        <StatCard title="Approved Faculty" value={stats.approved_Fac} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
-        <StatCard title="Hold On Faculty" value={stats.holdOn_Fac} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
-        <StatCard title="Rejected Faculty" value={stats.rejected_Fac} icon={<XCircle />} gradient="from-red-400 to-red-600" />
-        <StatCard title="In Progress University" value={stats.inProgress_Uni} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
-        <StatCard title="Approved University" value={stats.approved_Uni} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
-        <StatCard title="Hold On University" value={stats.holdOn_Uni} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
-        <StatCard title="Rejected University" value={stats.rejected_Uni} icon={<XCircle />} gradient="from-red-400 to-red-600" />
-        <StatCard title="Complete" value={stats.complete} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title={t('stat_total')} value={stats.total} icon={<Users />} gradient="from-slate-500 to-slate-600" />
+        <StatCard title={t('stat_submitted')} value={stats.submitted} icon={<Clock />} gradient="from-yellow-400 to-amber-500" />
+        <StatCard title={t('stat_in_prog_fac')} value={stats.inProgress_Fac} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
+        <StatCard title={t('stat_app_fac')} value={stats.approved_Fac} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title={t('stat_hold_fac')} value={stats.holdOn_Fac} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
+        <StatCard title={t('stat_rej_fac')} value={stats.rejected_Fac} icon={<XCircle />} gradient="from-red-400 to-red-600" />
+        <StatCard title={t('stat_in_prog_uni')} value={stats.inProgress_Uni} icon={<Clock />} gradient="from-blue-400 to-blue-600" />
+        <StatCard title={t('stat_app_uni')} value={stats.approved_Uni} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
+        <StatCard title={t('stat_hold_uni')} value={stats.holdOn_Uni} icon={<AlertCircle />} gradient="from-orange-400 to-orange-600" />
+        <StatCard title={t('stat_rej_uni')} value={stats.rejected_Uni} icon={<XCircle />} gradient="from-red-400 to-red-600" />
+        <StatCard title={t('stat_complete')} value={stats.complete} icon={<CheckCircle2 />} gradient="from-emerald-400 to-emerald-600" />
       </div>
 
       {/* Map & Region Details */}
@@ -1547,7 +1547,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                   <Badge status={student.status} />
                 </div>
                 <div className="text-sm text-slate-600 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                  <p className="flex gap-2"><Building className="text-slate-400 shrink-0" size={16}/> <span className="truncate"><strong>Organization:</strong> {student.company} ({student.country})</span></p>
+                  <p className="flex gap-2"><Building className="text-slate-400 shrink-0" size={16}/> <span className="truncate"><strong>{t('appr_org')}</strong> {student.company} ({student.country})</span></p>
                   <p><strong>{t('appr_position')}</strong> {student.position}</p>
                   <p><strong>{t('appr_academic')}</strong> GPAX {student.gpax} | {student.engTest}</p>
                   <p><strong>{t('appr_duration')}</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>

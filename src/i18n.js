@@ -109,7 +109,7 @@ const resources = {
       "table_prefix": "คำนำหน้า",
       "table_fname": "ชื่อจริง",
       "table_lname": "นามสกุล",
-      "table_gpax": "GPAX",
+      "table_gpax": "เกรดเฉลี่ยรวม",
       "table_eng_test": "คะแนนภาษา",
       "table_org": "องค์กร",
       "table_country": "ประเทศ",
