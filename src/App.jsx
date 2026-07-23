@@ -2128,9 +2128,10 @@ function PrintApplicationForm({ student }) {
          </div>
          {/*<div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>*/}
       </div>
-
-      <h2 className="font-bold text-center">ใบสมัครงาน</h2>
-      <h5 className="text-center">(Job application form)</h5>
+      <div className="space-y-8 text-sm leading-relaxed">
+        <h2 className="font-bold text-center">ใบสมัครงาน</h2>
+        <h5 className="text-center mt-8">(Job application form)</h5>
+      </div>
 
       {/* ส่วนข้อมูล */}
       <div className="space-y-6 text-sm leading-relaxed">
