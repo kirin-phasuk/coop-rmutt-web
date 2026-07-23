@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import imageCompression from 'browser-image-compression';
 import { 
   Users, LayoutDashboard, LogOut, PlusCircle, CheckSquare, FileSpreadsheet, 
@@ -196,6 +197,7 @@ const Badge = ({ status }) => (
 );
 
 function NavItem({ icon, label, active, onClick }) {
+  const { t } = useTranslation();
   return (
     <button onClick={onClick} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
       {icon} <span className="font-medium text-sm">{label}</span>
@@ -204,6 +206,7 @@ function NavItem({ icon, label, active, onClick }) {
 }
 
 function StatCard({ title, value, icon, gradient }) {
+  const { t } = useTranslation();
   return (
     <div className={`bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 p-5 flex items-center gap-4 relative overflow-hidden group`}>
       <div className={`absolute -right-6 -top-6 opacity-[0.03] group-hover:scale-110 group-hover:opacity-[0.06] transition-all duration-500`}>
@@ -221,6 +224,7 @@ function StatCard({ title, value, icon, gradient }) {
 }
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   const [users, setUsers] = useState(() => {
     const savedUsers = localStorage.getItem('mock_users');
     return savedUsers ? JSON.parse(savedUsers) : USERS;
@@ -233,6 +237,11 @@ export default function App() {
   const [printingStudent, setPrintingStudent] = useState(null);
 
   const studentHasRecord = currentUser?.role === 'student' && students.some(s => s.studentId === currentUser?.username);
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'th' ? 'en' : 'th';
+    i18n.changeLanguage(newLang);
+  };
 
   useEffect(() => { localStorage.setItem('mock_users', JSON.stringify(users)); }, [users]);
   useEffect(() => {
@@ -464,7 +473,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 print:h-auto print:block">
+    <div className="font-sarabun flex h-screen bg-slate-50 font-sans text-slate-900 print:h-auto print:block">
       {/* Sidebar */}
       <aside className="w-70 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-10 flex-shrink-0 print:hidden">
         <div className="p-5 border-b border-slate-800 flex items-center gap-3">
@@ -487,29 +496,29 @@ export default function App() {
 
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           <NavItem 
-            icon={<LayoutDashboard size={20} />} label="Dashboard" 
+            icon={<LayoutDashboard size={20} />} label={t('menu_dashboard')} 
             active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} 
           />
           <NavItem 
-            icon={<FileSpreadsheet size={20} />} label=" Spreadsheet" 
+            icon={<FileSpreadsheet size={20} />} label={t('menu_spreadsheet')} 
             active={activeTab === 'list'} onClick={() => {setActiveTab('list'); setEditingStudent(null); }} 
           />
 
           {(['admin', 'facultyCoordinator'].includes(currentUser.role) || (currentUser.role === 'student' && !studentHasRecord)) && (
-            <NavItem icon={<PlusCircle size={20} />} label="New Registration" active={activeTab === 'entry'} onClick={() => {setActiveTab('entry'); setEditingStudent(null); }} />
+            <NavItem icon={<PlusCircle size={20} />} label={t('menu_new_reg')} active={activeTab === 'entry'} onClick={() => {setActiveTab('entry'); setEditingStudent(null); }} />
           )}
 
           {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
-            <NavItem icon={<CheckSquare size={20} />} label="Approvals" active={activeTab === 'approval'} onClick={() => {setActiveTab('approval'); setEditingStudent(null);}} />
+            <NavItem icon={<CheckSquare size={20} />} label={t('menu_approvals')} active={activeTab === 'approval'} onClick={() => {setActiveTab('approval'); setEditingStudent(null);}} />
           )}
 
           {['admin', 'facultyCoordinator'].includes(currentUser.role) && (
-              <NavItem icon={<UserCog size={20} />} label="User Management" active={activeTab === 'users'} onClick={() => {setActiveTab('users'); setEditingStudent(null); }} />
+              <NavItem icon={<UserCog size={20} />} label={t('menu_users')} active={activeTab === 'users'} onClick={() => {setActiveTab('users'); setEditingStudent(null); }} />
           )}
           
           <div className="pt-4 mt-4 border-t border-slate-800">
             <NavItem 
-              icon={<BookOpen size={20} />} label="User Guide" 
+              icon={<BookOpen size={20} />} label={t('menu_guide')} 
               active={activeTab === 'guide'} onClick={() => {setActiveTab('guide'); setEditingStudent(null); }} 
             />
           </div>
@@ -517,23 +526,32 @@ export default function App() {
 
         <div className="p-4 border-t border-slate-800">
           <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors w-full px-3 py-2 rounded-md hover:bg-slate-800">
-            <LogOut size={20} /><span>Log Out</span>
+            <LogOut size={20} /><span>{t('menu_logout')}</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden min-w-0 print:overflow-visible print:block">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-8 shadow-sm flex-shrink-0 print:hidden">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm flex-shrink-0 print:hidden">          
           <h1 className="text-xl font-bold text-slate-800 truncate">
-            {activeTab === 'dashboard' && 'Dashboard Overview'}
-            {activeTab === 'list' && 'Spreadsheet : Student Records'}
-            {activeTab === 'entry' && 'Student Registration Form'}
-            {activeTab === 'approval' && 'Approval Management System'}
-            {activeTab === 'users' && 'User Account Management'}
-            {activeTab === 'edit' && 'Edit Student Record'}
-            {activeTab === 'guide' && 'User Guide'}
+            {activeTab === 'dashboard' && t('header_dashboard')}
+            {activeTab === 'list' && t('header_spreadsheet')}
+            {activeTab === 'entry' && t('header_entry')}
+            {activeTab === 'approval' && t('header_approval')}
+            {activeTab === 'users' && t('header_users')}
+            {activeTab === 'edit' && t('header_edit')}
+            {activeTab === 'guide' && t('header_guide')}
+            {/* ปุ่มสลับภาษา */}
           </h1>
+          <div className="flex justify-end">
+            <button 
+              onClick={toggleLanguage}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-bold"
+            >
+              {i18n.language === 'th' ? 'English' : 'ภาษาไทย'}
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-auto p-4 md:p-8 print:p-0 print:overflow-visible print:block">
@@ -554,6 +572,7 @@ export default function App() {
 // Dashboard Views
 
 function DashboardView({ students }) {
+  const { t } = useTranslation();
   const [selectedZone, setSelectedZone] = useState('ALL');
   const stats = useMemo(() => {
     return {
@@ -609,13 +628,13 @@ function DashboardView({ students }) {
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
             <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-              <Globe2 className="text-blue-600" size={20} /> Cooperative Education Deployment Map
+              <Globe2 className="text-blue-600" size={20} /> {t('map_title')}
             </h3>
             <button 
               onClick={() => setSelectedZone('ALL')}
               className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedZone === 'ALL' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-100'}`}
             >
-              View All
+              {t('map_view_all')}
             </button>
           </div>
           <div className="relative w-full h-[400px] bg-[#e6f2f8] overflow-hidden">
@@ -663,8 +682,7 @@ function DashboardView({ students }) {
           <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 shrink-0">
             <h3 className="font-semibold text-slate-800 flex items-center gap-2">
               <Navigation className="text-emerald-600" size={18} /> 
-              {selectedZone === 'ALL' ? 'Recent Entries' : `Students in ${ZONES.find(z => z.id === selectedZone)?.name}`}
-            </h3>
+              {selectedZone === 'ALL' ? t('map_recent_entries') : `${t('map_students_in')} ${ZONES.find(z => z.id === selectedZone)?.name}`}            </h3>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             <div className="divide-y divide-slate-100">
@@ -689,7 +707,7 @@ function DashboardView({ students }) {
               {displayStudents.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-slate-400">
                   <Map size={48} className="text-slate-200 mb-3" />
-                  <p className="text-center font-medium">No students deployed<br/>in this region.</p>
+                  <p className="text-center font-medium">{t('map_no_students')}</p>
                 </div>
               )}
             </div>
@@ -702,6 +720,7 @@ function DashboardView({ students }) {
 }
 
 function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
+  const { t } = useTranslation();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -771,7 +790,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
   return (
     <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <h3 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
-        <PlusCircle className="text-blue-500" /> Create New Record
+        <PlusCircle className="text-blue-500" /> {t('form_create_title')}
       </h3>
 
       {error && (
@@ -812,25 +831,25 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
               {isUploadingImg && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-blue-600">Uploading...</div>}
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Profile Picture (รูปถ่ายหน้าตรง)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_profile_pic')}</label>
               <input type="file" accept="image/*" onChange={onImageChange} disabled={isUploadingImg} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
-              <p className="text-xs text-slate-400 mt-2">Recommended: .jpg, .png (Max 5MB). The system will automatically compress the image to save storage.</p>
+              <p className="text-xs text-slate-400 mt-2">{t('form_pic_desc')}</p>
             </div>
           </div>
         
         {/* Section 1: Personal Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> {t('form_sec_student')}</h4>
           <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div><label className="block text-sm font-medium mb-1">Student ID (Username)</label><input type="text" name="studentId" defaultValue={currentUser.role === 'student' ? currentUser.username : ''} readOnly={currentUser.role === 'student'} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50" required placeholder="e.g. 116310..." /></div>
-              <div><label className="block text-sm font-medium mb-1">Prefix</label><select name="prefix" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required><option value="">Select...</option><option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option></select></div>
-              <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
-              <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
-              <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-              <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_student_id')}</label><input type="text" name="studentId" defaultValue={currentUser.role === 'student' ? currentUser.username : ''} readOnly={currentUser.role === 'student'} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50" required placeholder="e.g. 116310..." /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_prefix')}</label><select name="prefix" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required><option value="">Select...</option><option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option></select></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_fname')}</label><input type="text" name="firstName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_lname')}</label><input type="text" name="lastName" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_gpax')}</label><input type="number" step="0.01" min="0" max="4" name="gpax" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_eng_test')}</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
               <div>
-                <label className="block text-sm font-medium mb-1">Faculty</label>
+                <label className="block text-sm font-medium mb-1">{t('form_faculty')}</label>
                 <select name="faculty" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required disabled={currentUser.role === 'facultyCoordinator'} defaultValue={currentUser.role === 'facultyCoordinator' ? currentUser.faculty : ''}>
                   <option value="">Select Faculty...</option>
                   {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
@@ -842,33 +861,33 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
 
         {/* Section 2: Organization Data */}
         <div className="bg-[#f8fafc] p-6 rounded-lg border border-slate-100">
-          <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+          <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> {t('form_sec_company')}</h4>
           <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">{t('form_company_name')} </label><input type="text" name="company" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
             <div>
-              <label className="block text-sm font-medium mb-1">Country *</label>
+              <label className="block text-sm font-medium mb-1">{t('form_country')} *</label>
               <select name="country" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required>
                 <option value="">Select Country...</option>
                 {COUNTRIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>          
-            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
-            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">{t('form_position')}</label><input type="text" name="position" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">{t('form_year')}</label><select name="year" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">{t('form_semester')}</label><select name="semester" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
             </div>
           </div>
         </div>
 
         {/* Section 3: Schedule */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> {t('form_sec_schedule')}</h4>
             <div className='p-5 bg-white border border-slate-200 rounded-lg shadow-sm'>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
-                <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Departure Date</label><input type="date" name="departureDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">Internship Start Date</label><input type="date" name="startDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">Internship End Date</label><input type="date" name="endDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">Return Date</label><input type="date" name="returnDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1 ">{t('form_dep_date')}</label><input type="date" name="departureDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('form_start_date')}</label><input type="date" name="startDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('form_end_date')}</label><input type="date" name="endDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('form_return_date')}</label><input type="date" name="returnDate" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
             </div>
           </div>
         </div>
@@ -876,21 +895,21 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
         {/* Section 4: Document Attachments */}
         {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />{t('form_sec_doc')}</h4>
           <div className="space-y-6">
             
             {/* 4.1 Faculty Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
               <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
-                <Banknote size={16} className="text-emerald-600"/> 1. Faculty Scholarship Request
+                <Banknote size={16} className="text-emerald-600"/> {t('form_doc_fac')}
               </h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_attach_pdf')}</label>
                    <input type="url" name="facultyScholarshipFileName" placeholder="https://..." className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_req_amount')}</label>
                    <input type="number" name="facultyScholarshipAmount" min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
                  </div>
               </div>
@@ -899,27 +918,27 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
             {/* 4.2 University Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
               <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
-                <Banknote size={16} className="text-emerald-600"/> 2. University Scholarship Request
+                <Banknote size={16} className="text-emerald-600"/> {t('form_doc_uni')}
               </h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Attach PDF File</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_attach_pdf')}</label>
                    <input type="url" name="uniScholarshipFileName" placeholder="https://..." className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
                  </div>
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_req_amount')}</label>
                    <input type="number" name="uniScholarshipAmount" min="0" placeholder="e.g. 50000" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled={currentUser.role === 'student'}/>
                  </div>
               </div>
             </div>
-             {currentUser.role === 'student' && <p className="text-xs text-red-500 mt-2">Students cannot upload scholarship files directly. Please contact your Faculty Coordinator.</p>}
+             {currentUser.role === 'student' && <p className="text-xs text-red-500 mt-2">{t('form_student_notice')}</p>}
           </div>
         </div>
         )}
 
         <div className="flex justify-end pt-4">
           <button type="submit" disabled={isSubmitting} className={`w-full md:w-auto text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-            <Save size={20} /> {isSubmitting ? 'Uploading...' : 'Save and Submit'}
+            <Save size={20} /> {isSubmitting ? 'Uploading...' : t('btn_save_submit')}
           </button>
         </div>
       </form>
@@ -928,6 +947,7 @@ function DataEntryView({ onSubmit, uploadFileToCloud, currentUser }) {
 }
 
 function StudentListView({ students , currentUser, onEdit , onDelete, onPrintForm}) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [yearFilter, setYearFilter] = useState('ALL');
@@ -1004,15 +1024,15 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:overflow-visible">
       <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-4 print:hidden">
         <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-          <FileSpreadsheet className="text-emerald-600" /> Spreadsheet: Student Records
+          <FileSpreadsheet className="text-emerald-600" /> {t('header_spreadsheet')}
         </h3>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200">Total {filteredStudents.length} records</span>
           <button onClick={handleExportExcel} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Printer size={16} /> Export to Export Excel
+            <Printer size={16} /> {t('btn_export_excel')}
           </button>
           <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            <Printer size={16} /> Export to PDF
+            <Printer size={16} /> {t('btn_export_pdf')}
           </button>
         </div>
       </div>
@@ -1023,7 +1043,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             type="text" 
-            placeholder="Search by name, organization, country, position..." 
+            placeholder={t('search_placeholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
@@ -1037,7 +1057,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
               onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
             >
-              <option value="ALL">All Statuses</option>
+              <option value="ALL">{t('filter_all_status')}</option>
               {Object.values(STATUSES).map(status => (
                 <option key={status} value={status}>{status}</option>
               ))}
@@ -1050,7 +1070,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
               onChange={(e) => setYearFilter(e.target.value)}
               className="bg-transparent focus:outline-none text-sm text-slate-700 font-medium cursor-pointer"
             >
-              <option value="ALL">All Academic Years</option>
+              <option value="ALL">{t('filter_all_years')}</option>
               {availableYears.map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
@@ -1063,26 +1083,26 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
         <table className="w-full text-sm text-left whitespace-nowrap">
           <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10">
             <tr>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold text-blue-700">Student ID</th>
-              <th className="px-4 py-3 font-semibold">Prifix</th>
-              <th className="px-4 py-3 font-semibold">First Name</th>
-              <th className="px-4 py-3 font-semibold">Last Name</th>
-              <th className="px-4 py-3 font-semibold">GPAX</th>
-              <th className="px-4 py-3 font-semibold">English Test</th>
-              <th className="px-4 py-3 font-semibold">Organization</th>
-              <th className="px-4 py-3 font-semibold">Country</th>
-              <th className="px-4 py-3 font-semibold">Position</th>
-              <th className="px-4 py-3 font-semibold text-center">Academic Year</th>
-              <th className="px-4 py-3 font-semibold text-center">Semester</th>
-              <th className="px-4 py-3 font-semibold">Departure</th>
-              <th className="px-4 py-3 font-semibold">Start Date</th>
-              <th className="px-4 py-3 font-semibold">End Date</th>
-              <th className="px-4 py-3 font-semibold">Return</th>
-              <th className="px-4 py-3 font-semibold text-center">Faculty Scholarship (THB)</th>
-              <th className="px-4 py-3 font-semibold text-center">University Scholarship (THB)</th>
-              <th className="px-4 py-3 font-semibold text-center">Document</th>
-              <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">Actions</th>
+              <th className="px-4 py-3 font-semibold">{t('table_status')}</th>
+              <th className="px-4 py-3 font-semibold text-blue-700">{t('table_student_id')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_prefix')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_fname')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_lname')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_gpax')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_eng_test')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_org')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_country')}</th>
+              <th className="px-4 py-3 font-semibold">{t('table_position')}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t('table_year')}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t('table_sem')}</th>
+              <th className="px-4 py-3 font-semibold">{t('form_dep_date')}</th>
+              <th className="px-4 py-3 font-semibold">{t('form_start_date')}</th>
+              <th className="px-4 py-3 font-semibold">{t('form_end_date')}</th>
+              <th className="px-4 py-3 font-semibold">{t('form_return_date')}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t('table_fac_fund')}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t('table_uni_fund')}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t('table_document')}</th>
+              <th className="px-4 py-3 text-center sticky right-0 bg-slate-100">{t('table_action')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -1145,7 +1165,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
             ))}
             {filteredStudents.length === 0 && (
               <tr>
-                <td colSpan="15" className="px-4 py-12 text-center text-slate-500">No student records found matching your criteria.</td>
+                <td colSpan="15" className="px-4 py-12 text-center text-slate-500">{t('table_no_data')}</td>
               </tr>
             )}
           </tbody>
@@ -1164,6 +1184,7 @@ function StudentListView({ students , currentUser, onEdit , onDelete, onPrintFor
 }
 
 function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, currentUser ,onDeleteFile }) {
+  const { t } = useTranslation();
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAction, setSubmitAction] = useState('update');
@@ -1202,9 +1223,6 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
-    // FIX: เติมข้อมูลที่หายไปจากการถูก Disabled
-    // ฟิลด์ไหนที่ถูก disabled ไว้ใน UI มันจะไม่ถูกส่งมาใน FormData
-    // เราจึงต้องเอาค่าเดิมจาก prop 'student' มาใส่กลับเข้าไป เพื่อให้ผ่าน Required Fields Validation
     Object.keys(student).forEach(key => {
       if (data[key] === undefined) {
         data[key] = student[key];
@@ -1241,7 +1259,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
   return (
     <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Edit className="text-orange-500" /> Edit Student Record</h3>
+        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Edit className="text-orange-500" /> {t('form_edit_title')}</h3>
         <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
       </div>
       
@@ -1273,28 +1291,28 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
             {isUploadingImg && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-blue-600">Uploading...</div>}
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Profile Picture (รูปถ่ายหน้าตรง)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_profile_pic')}</label>
             <input type="file" accept="image/*" onChange={onImageChange} disabled={isUploadingImg || isUni} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
-            <p className="text-xs text-slate-400 mt-2">Recommended: .jpg, .png (Max 5MB). The system will automatically compress the image to save storage.</p>
+            <p className="text-xs text-slate-400 mt-2">{t('form_pic_desc')}</p>
           </div>
         </div>
         
         {/* Section 1: Personal Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> Student Information</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><GraduationCap size={18} /> {t('form_sec_student')}</h4>
           <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-              <div><label className="block text-sm font-medium mb-1">Student ID (Username)</label><input type="text" name="studentId" defaultValue={student.studentId} disabled={isStudent || isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50" required/></div>
-              <div ><label className="block text-sm font-medium mb-1">Prefix</label>
+              <div><label className="block text-sm font-medium mb-1">{t('form_student_id')}</label><input type="text" name="studentId" defaultValue={student.studentId} disabled={isStudent || isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50" required/></div>
+              <div ><label className="block text-sm font-medium mb-1">{t('form_prefix')}</label>
               <select name="prefix" defaultValue={student.prefix} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 <option value="Mr.">Mr.</option><option value="Ms.">Ms.</option><option value="Mrs.">Mrs.</option>
               </select></div>
-              <div><label className="block text-sm font-medium mb-1">First Name</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
-              <div><label className="block text-sm font-medium mb-1">Last Name</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
-              <div><label className="block text-sm font-medium mb-1">GPAX</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-              <div><label className="block text-sm font-medium mb-1">English Proficiency Test</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_fname')}</label><input type="text" name="firstName" defaultValue={student.firstName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_lname')}</label><input type="text" name="lastName" defaultValue={student.lastName} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_gpax')}</label><input type="number" step="0.01" min="0" max="4" name="gpax" defaultValue={student.gpax} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('form_eng_test')}</label><input type="text" name="engTest" placeholder="e.g., TOEIC 600" defaultValue={student.engTest} disabled={isUni} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
               <div>
-                <label className="block text-sm font-medium mb-1">Faculty</label>
+                <label className="block text-sm font-medium mb-1">{t('form_faculty')}</label>
                 <select name="faculty" className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" defaultValue={student.faculty}>
                   {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
@@ -1305,33 +1323,33 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 
         {/* Section 2: Organization Data */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> Host Organization Information</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Building size={18} /> {t('form_sec_company')}</h4>
           <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Organization Name </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
+            <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">{t('form_company_name')} </label><input type="text" name="company" defaultValue={student.company} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required/></div>
             <div>
-              <label className="block text-sm font-medium mb-1">Country</label>
+              <label className="block text-sm font-medium mb-1">{t('form_country')}</label>
               <select name="country" defaultValue={student.country} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required>
                 <option value="">Select Country...</option>
                 {COUNTRIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>        
-            <div><label className="block text-sm font-medium mb-1">Position / Job Title</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium mb-1">Academic Year</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
-            <div><label className="block text-sm font-medium mb-1">Semester</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">{t('form_position')}</label><input type="text" name="position" defaultValue={student.position} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium mb-1">{t('form_year')}</label><select name="year" defaultValue={student.year} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{YEARS.map(y => <option key={y} value={y}>{y}</option>)}</select></div>
+            <div><label className="block text-sm font-medium mb-1">{t('form_semester')}</label><select name="semester" defaultValue={student.semester} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Select...</option>{SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
           </div>
           </div>
         </div>
 
         {/* Section 3: Schedule */}
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> Internship Schedule</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Plane size={18} /> {t('form_sec_schedule')}</h4>
           <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Departure Date</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Internship Start Date</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Internship End Date</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
-            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">Return Date</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">{t('form_dep_date')}</label><input type="date" name="departureDate" defaultValue={student.departureDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">{t('form_start_date')}</label><input type="date" name="startDate" defaultValue={student.startDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">{t('form_end_date')}</label><input type="date" name="endDate" defaultValue={student.endDate} disabled={isStudent} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 mb-1 ">{t('form_return_date')}</label><input type="date" name="returnDate" defaultValue={student.returnDate} disabled={isStudent}className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" /></div>
           </div>
           </div>
         </div>
@@ -1339,19 +1357,19 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
         {/* Section 4: Document Attachments */}
         {['admin', 'facultyCoordinator', 'universityCoordinator'].includes(currentUser.role) && (
         <div className="bg-slate-50 p-6 rounded-lg border border-slate-100">
-          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />Scholarship Documents Request</h4>
+          <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2"><Paperclip size={18} />{t('form_sec_doc')}</h4>
           <div className="space-y-6">
             
            {/* 4.1 Faculty Scholarship */}
             <div className="p-5 bg-white border border-slate-200 rounded-lg shadow-sm">
               <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
-                <Banknote size={16} className="text-emerald-600"/> 1. Faculty Scholarship Request
+                <Banknote size={16} className="text-emerald-600"/> {t('form_doc_fac')}
               </h5>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">
-                     Document Link (URL) 
+                     {t('form_attach_pdf')}
                      {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
@@ -1365,7 +1383,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                  </div>
                  
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_req_amount')}</label>
                    <input 
                      type="number" 
                      name="facultyScholarshipAmount" 
@@ -1384,13 +1402,13 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
               {/* --- ส่วน Header & ปุ่ม Action (จัดให้อยู่ซ้าย-ขวา) --- */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <h5 className="font-medium text-slate-800 mb-4 flex items-center gap-2">
-                  <Banknote size={16} className="text-emerald-600"/> 2. University Scholarship Request
+                  <Banknote size={16} className="text-emerald-600"/> {t('form_doc_uni')}
                 </h5>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">Document Link (URL)
+                   <label className="block text-sm font-medium text-slate-700 mb-2 flex justify-between">{t('form_attach_pdf')}
                     {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">Test Link ↗</a>}
                    </label>
                    <input 
@@ -1404,7 +1422,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
                  </div>
                  
                  <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Requested Amount (THB)</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">{t('form_req_amount')}</label>
                    <input 
                      type="number" 
                      name="uniScholarshipAmount" 
@@ -1428,10 +1446,10 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
             
             {/* Student Project Input */}
             <div className="space-y-4 mb-8 bg-white p-5 rounded border border-purple-100">
-              <div><label className="block text-sm font-medium text-slate-700 mb-2">Project Name</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Enter Project Title" /></div>
-              <div><label className="block text-sm font-medium text-slate-700 mb-2">Project Description</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Briefly describe the project..." /></div>
-              <div><label className="block text-sm font-medium text-slate-700 mb-2">Project GoogleDrive Link(Optional)</label><input type="url" name="projectDrive" defaultValue={student.projectDrive} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="https://..." /></div>
-              <div><label className="block text-sm font-medium text-slate-700 mb-2">Report GoogleDrive Link(Optional)</label><input type="url" name="reportDrive" defaultValue={student.reportDrive} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="https://..." /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">{t('form_proj_name')}</label><input type="text" name="projectName" defaultValue={student.projectName} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Enter Project Title" /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">{t('form_proj_desc')}</label><textarea name="projectDescription" defaultValue={student.projectDescription} disabled={!isStudent && !isAdmin} rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="Briefly describe the project..." /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">{t('form_proj_drive')}</label><input type="url" name="projectDrive" defaultValue={student.projectDrive} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="https://..." /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-2">{t('form_report_drive')}</label><input type="url" name="reportDrive" defaultValue={student.reportDrive} disabled={!isStudent && !isAdmin} className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" placeholder="https://..." /></div>
             </div>
 
           </div>
@@ -1443,7 +1461,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
           {/* ปุ่ม Submit Project จะโผล่มาให้นักศึกษากดก็ต่อเมื่อยังไม่ได้ Submit */}
           {isCompleteProgress && (isStudent || isAdmin) && student.status !== STATUSES.PROJ_FINISHED && (
             <button type="submit" onClick={() => setSubmitAction('submitProject')} disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm flex items-center gap-2">
-              <Star size={18} /> Save & Submit Project
+              <Star size={18} /> {t('btn_save_project')}
             </button>
           )}
           {/* ปุ่ม Save ธรรมดา */}
@@ -1457,6 +1475,7 @@ function EditStudentView({ student, onUpdate, onCancel, uploadFileToCloud, curre
 }
 
 function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent, users}) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -1486,7 +1505,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full max-w-7xl mx-auto">
       <div className="p-4 md:p-6 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between lg:items-center bg-slate-50">
         <h3 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
-          <CheckSquare className="text-blue-600" /> Approval Queue
+          <CheckSquare className="text-blue-600" /> {t('appr_queue')}
         </h3>
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           {/* Search Input */}
@@ -1494,17 +1513,17 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
-              placeholder="Search by name, organization..." 
+              placeholder={t('search_placeholder')}
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
               className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors"
             />
           </div>
         <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 shrink-0">
-          <button onClick={() => setFilter('ALL')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>All</button>
-          <button onClick={() => setFilter('ACTIVE')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'ACTIVE' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>Active</button>
-          <button onClick={() => setFilter('HOLD')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'HOLD' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>On Hold</button>
-          <button onClick={() => setFilter('RESOLVED')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'RESOLVED' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>Resolved</button>
+          <button onClick={() => setFilter('ALL')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{t('filter_all')}</button>
+          <button onClick={() => setFilter('ACTIVE')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'ACTIVE' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{t('filter_active')}</button>
+          <button onClick={() => setFilter('HOLD')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'HOLD' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{t('filter_hold')}</button>
+          <button onClick={() => setFilter('RESOLVED')} className={`px-4 py-2 text-sm font-medium rounded-md border whitespace-nowrap ${filter === 'RESOLVED' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{t('filter_resolved')}</button>
         </div>
       </div>
       </div>
@@ -1529,11 +1548,11 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                 </div>
                 <div className="text-sm text-slate-600 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 bg-slate-50 p-4 rounded-lg border border-slate-100">
                   <p className="flex gap-2"><Building className="text-slate-400 shrink-0" size={16}/> <span className="truncate"><strong>Organization:</strong> {student.company} ({student.country})</span></p>
-                  <p><strong>Position:</strong> {student.position}</p>
-                  <p><strong>Academic Record:</strong> GPAX {student.gpax} | {student.engTest}</p>
-                  <p><strong>Duration:</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>
-                  <p><strong>Faculty Scholarship:</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 border px-1 rounded ml-1 text-xs hover:underline">Link</a>}</p>
-                  <p><strong>University Scholarship:</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 border px-1 rounded ml-1 text-xs hover:underline">Link</a>}</p>
+                  <p><strong>{t('appr_position')}</strong> {student.position}</p>
+                  <p><strong>{t('appr_academic')}</strong> GPAX {student.gpax} | {student.engTest}</p>
+                  <p><strong>{t('appr_duration')}</strong> {new Date(student.startDate).toLocaleDateString('en-US')} - {new Date(student.endDate).toLocaleDateString('en-US')}</p>
+                  <p><strong>{t('appr_fac_fund')}</strong> ฿{student.facultyScholarshipAmount || '0'} {student.facultyScholarshipFileName && <a href={student.facultyScholarshipFileName.startsWith('http') ? student.facultyScholarshipFileName : `https://${student.facultyScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 border px-1 rounded ml-1 text-xs hover:underline">Link</a>}</p>
+                  <p><strong>{t('appr_uni_fund')}</strong> ฿{student.uniScholarshipAmount || '0'} {student.uniScholarshipFileName && <a href={student.uniScholarshipFileName.startsWith('http') ? student.uniScholarshipFileName : `https://${student.uniScholarshipFileName}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 border px-1 rounded ml-1 text-xs hover:underline">Link</a>}</p>
                 </div>
                  {/* Project Sneak Peek */}
                 {[STATUSES.COMPLETE, STATUSES.PROJ_SUBMITTED, STATUSES.PROJ_FINISHED].includes(student.status) && student.projectName && (
@@ -1570,21 +1589,21 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
                       onClick={() => onUpdateStatus(student.id, STATUSES.SUBMITTED)} 
                       className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-center gap-1 mt-1"
                     >
-                      <ArrowLeftCircle size={14}/> Revert to Submitted
+                      <ArrowLeftCircle size={14}/> {t('btn_revert')}
                     </button>
                 )}
                 {/* กล่องข้อความเมื่อสำเร็จแล้ว */}
                 {isCompleted && (
                   <div className="text-center text-emerald-700 bg-emerald-50 border border-emerald-200 p-3 rounded-md font-medium text-sm mt-2">
                     <CheckCircle2 size={24} className="mx-auto mb-1" />
-                    All Steps Completed
+                    {t('appr_complete_msg')}
                   </div>
                 )}
             
                 {filteredStudents.length === 0 && (
                   <div className="text-center py-16 text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-300">
                     <CheckSquare size={48} className="mx-auto text-slate-300 mb-4" />
-                    <p>No records match the selected criteria.</p>
+                    <p>{t('table_no_data')}</p>
                   </div>
                 )}
                 {student.facultyScholarshipFileName && (
@@ -1615,7 +1634,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
           {filteredStudents.length === 0 && (
             <div className="text-center py-16 text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-300">
               <Search size={48} className="mx-auto text-slate-300 mb-4" />
-              <p>No records match your search or selected criteria.</p>
+              <p>{t('table_no_data')}</p>
             </div>
           )}
         </div>
@@ -1625,6 +1644,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
 }
 
 function UserManagementView({ users, setUsers ,currentUser}) {
+  const { t } = useTranslation();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState('');
@@ -1729,7 +1749,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           <div className="flex items-center gap-2">
             {/* เปลี่ยน Title ฟอร์มตามโหมด */}
             {editingUser ? <Edit className="text-orange-500" /> : <UserPlus className="text-blue-500" />} 
-            {editingUser ? `Edit Account : ${editingUser.username}` : 'Add New Account'}
+            {editingUser ? `${t('user_edit_title')} : ${editingUser.username}` : t('user_add_title')}
           </div>
           {/* ปุ่ม Cancel จะโผล่มาเฉพาะตอนแก้ไข */}
           {editingUser && (
@@ -1763,21 +1783,21 @@ function UserManagementView({ users, setUsers ,currentUser}) {
         {/* 👉 3. ใช้ key={editingUser?.username} บังคับฟอร์มล้างค่าตัวเองเมื่อกดเปลี่ยนคนแก้ไข และดึง defaultValue มาโชว์ */}
         <form key={editingUser ? editingUser.username : 'new-form'} onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Username / StudentID</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('user_username')}</label>
             <input type="text" name="username" defaultValue={editingUser?.username || ''} placeholder="e.g., coordinator02" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('user_password')}</label>
             <input type="password" name="password" defaultValue={editingUser?.password || ''} placeholder="Create password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('user_fullname')}</label>
             <input type="text" name="name" defaultValue={editingUser?.name || ''} placeholder="e.g., Jane Doe" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           {currentUser.role === 'admin' ? (
           <>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('user_role')}</label>
             <select name="role" defaultValue={editingUser?.role || 'admin'} 
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="admin">Administrator</option>
@@ -1787,7 +1807,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Faculty</label>
+            <label className="block text-sm font-medium mb-1">{t('user_faculty')}</label>
             <select name="faculty" defaultValue={editingUser?.faculty || ''} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" >
               <option value="">Select Faculty...</option>
               {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
@@ -1796,7 +1816,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           </>
           ) : (
             <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Account Role</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('user_role')}</label>
                 <select disabled className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 text-slate-500">
                   <option>Student</option>
                 </select>
@@ -1804,7 +1824,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           )}
 
           <button type="submit" className={`font-medium py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 h-[42px] text-white ${editingUser ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
-            {editingUser ? <><Save size={18} /> Update</> : <><UserPlus size={18} /> Add User</>}
+            {editingUser ? <><Save size={18} /> {t('btn_update')}</> : <><UserPlus size={18} /> {t('btn_add_user')}</>}
           </button>
         </form>
       </div>
@@ -1812,7 +1832,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-            <Users className="text-emerald-600" /> Registered Users
+            <Users className="text-emerald-600" /> {t('user_list_title')}
           </h3>
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -1829,11 +1849,11 @@ function UserManagementView({ users, setUsers ,currentUser}) {
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs text-slate-700 uppercase bg-slate-100">
               <tr>
-                <th className="px-6 py-3">Username</th>
-                <th className="px-6 py-3">Full Name</th>
-                <th className="px-6 py-3">Role</th>
-                <th className="px-6 py-3">Faculty</th>
-                <th className="px-6 py-3 text-center">Actions</th>
+                <th className="px-6 py-3">{t('user_username')}</th>
+                <th className="px-6 py-3">{t('user_fullname')}</th>
+                <th className="px-6 py-3">{t('user_role')}</th>
+                <th className="px-6 py-3">{t('user_faculty')}</th>
+                <th className="px-6 py-3 text-center">{t('table_action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1854,17 +1874,17 @@ function UserManagementView({ users, setUsers ,currentUser}) {
                   <td className="px-6 py-4">{user.faculty || '-'}</td>
                   <td className="px-6 py-4 text-right">
                     <button onClick={() => handleEditClick(user)} className="text-orange-500 hover:text-orange-700 hover:bg-orange-100 px-3 py-1.5 rounded-md transition-colors inline-flex items-center gap-1">
-                      <Edit size={16} /> Edit
+                      <Edit size={16} /> {t('btn_edit')}
                     </button>
                     {user.name !== currentUser.name ?(
                       <button 
                         onClick={() => handleRemoveUser(user.username)}
                         className="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors inline-flex items-center gap-1"
                       >
-                        <Trash2 size={16} /> Revoke
+                        <Trash2 size={16} /> {t('btn_revoke')}
                       </button>
                     ):(
-                      <span className="px-6 py-4 font-medium text-slate-400">- Current User -</span>
+                      <span className="px-6 py-4 font-medium text-slate-400">- {t('current_user')} -</span>
                     )}
                   </td>
                 </tr>
@@ -1886,6 +1906,7 @@ function UserManagementView({ users, setUsers ,currentUser}) {
 }
 
 function GuideView({ currentUser }) {
+  const { t } = useTranslation();
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
       <div className="flex items-center gap-3 mb-6 border-b pb-4">
@@ -2010,6 +2031,7 @@ function GuideView({ currentUser }) {
 }
 
 function LoginScreen({ onLogin }) {
+  const { t } = useTranslation();
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -2029,9 +2051,9 @@ function LoginScreen({ onLogin }) {
         <div className="bg-slate-900 p-8 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-blue-500/10 pointer-events-none"></div>
           <GraduationCap size={56} className="mx-auto text-blue-400 mb-4 relative z-10" />
-          <h2 className="text-2xl font-bold text-white relative z-10">RMUTT CWIE International</h2>
+          <h2 className="text-2xl font-bold text-white relative z-10" dangerouslySetInnerHTML={{ __html: t('app_title').replace(' ', '<br/>') }}></h2>
           <p className="text-slate-400 mt-2 text-sm relative z-10">
-            Login in to manage student records
+            {t('login_desc')}
           </p>
         </div>
         <div className="p-8">
@@ -2043,7 +2065,7 @@ function LoginScreen({ onLogin }) {
           )}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">USERNAME</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('login_username')}</label>
               <input 
                 type="text" 
                 name="username" 
@@ -2053,7 +2075,7 @@ function LoginScreen({ onLogin }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">PASSWORD</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('login_password')}</label>
               <input 
                 type="password" 
                 name="password" 
@@ -2067,7 +2089,7 @@ function LoginScreen({ onLogin }) {
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-md flex justify-center items-center gap-2 mt-2"
             >
-              LOGIN
+              {t('btn_login')}
             </button>
           </form>
           
@@ -2078,13 +2100,14 @@ function LoginScreen({ onLogin }) {
 }
 
 function PrintApplicationForm({ student }) {
+  const { t } = useTranslation();
   if (!student) return null;
 
   return (
     <div className="w-[210mm] min-h-[297mm] p-[15mm] bg-white text-black font-sans relative mx-auto box-border font-sarabun">
       
       {/* รูปโปรไฟล์ขวาบน */}
-      <div className="absolute top-[20mm] right-[15mm] w-[30mm] h-[40mm] border border-gray-400 flex items-center justify-center overflow-hidden bg-gray-50">
+      <div className="absolute top-[20mm] right-[15mm] w-[30mm] h-[40mm] border border-gray-400 flex items-center justify-center overflow-hidden bg-gray-50 font-sarabun">
         {student.profileImage ? (
           <img 
             src={`/api/download?url=${encodeURIComponent(student.profileImage)}`} 
@@ -2151,7 +2174,7 @@ function PrintApplicationForm({ student }) {
         <h3 className="font-bold text-base mt-8 italic">ข้อมูลส่วนตัวนักศึกษา (Student personal data)</h3>
         
         <div className="flex items-end gap-2">
-          <span className="whitespace-nowrap">ชื่อ-นามสกุล (Full Name)</span>
+          <span className="whitespace-nowrap ">ชื่อ-นามสกุล (Full Name)</span>
           <span className="border-b border-dotted border-black flex-1 text-blue-800 px-2">{student.prefix}{student.firstName} {student.lastName}</span>
         </div>
 
