@@ -2081,7 +2081,7 @@ function PrintApplicationForm({ student }) {
   if (!student) return null;
 
   return (
-    <div className="w-[210mm] min-h-[297mm] p-[15mm] bg-white text-black font-sans relative mx-auto box-border">
+    <div className="w-[210mm] min-h-[297mm] p-[15mm] bg-white text-black font-sans relative mx-auto box-border font-sarabun">
       
       {/* รูปโปรไฟล์ขวาบน */}
       <div className="absolute top-[20mm] right-[15mm] w-[30mm] h-[40mm] border border-gray-400 flex items-center justify-center overflow-hidden bg-gray-50">

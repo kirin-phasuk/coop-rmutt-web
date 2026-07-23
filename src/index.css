@@ -1,1 +1,7 @@
 @import "tailwindcss";
+@font-face {
+  font-family: 'THSarabunNew';
+  src: url('/fonts/THSarabunNew.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
