@@ -1485,7 +1485,7 @@ function ApprovalView({ students, onUpdateStatus , currentUser, onAssignStudent,
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full max-w-7xl mx-auto">
       <div className="p-4 md:p-6 border-b border-slate-200 flex flex-col lg:flex-row gap-4 justify-between lg:items-center bg-slate-50">
-        <h3 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
+        <h3 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
           <CheckSquare className="text-blue-600" /> Approval Queue
         </h3>
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
