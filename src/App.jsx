@@ -2087,7 +2087,6 @@ function PrintApplicationForm({ student }) {
       <div className="absolute top-[20mm] right-[15mm] w-[30mm] h-[40mm] border border-gray-400 flex items-center justify-center overflow-hidden bg-gray-50">
         {student.profileImage ? (
           <img 
-            // ✅ เรียกผ่าน Proxy api/download เหมือนกัน
             src={`/api/download?url=${encodeURIComponent(student.profileImage)}`} 
             alt="Profile" 
             className="w-full h-full object-cover" 
@@ -2100,6 +2099,21 @@ function PrintApplicationForm({ student }) {
           <span className="text-[10px] text-gray-400 text-center leading-tight">รูปถ่าย<br/>1 x 1.5 นิ้ว</span>
         )}
       </div>
+
+      <style type="text/css" media="print">
+            {`
+              @page {
+                size: A4;
+                margin: 0; /* ลบระยะขอบบราวเซอร์ ทำให้ URL และวันที่หายไป */
+              }
+              @media print {
+                body {
+                  /* เพิ่มระยะขอบด้านในให้กระดาษ 1 เซนติเมตร เพื่อไม่ให้เนื้อหาชิดขอบจนโดนเครื่องปริ้นตัดขอบ */
+                  padding: 1cm; 
+                }
+              }
+            `}
+        </style>
 
       {/* ส่วนหัว */}
       <div className="flex items-center gap-4 pb-4 mb-6">
