@@ -468,7 +468,7 @@ export default function App() {
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-10 flex-shrink-0 print:hidden">
         <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-          <img src="/logoRMUTT-color.png" alt="RMUTT Logo" className="w-10 h-10 object-contain shrink-0" />
+          <img src="/logoRMUTT-color.png" alt="RMUTT Logo" className="w-20 h-20 object-contain shrink-0" />
           <h1 className="text-lg md:text-xl font-bold text-white leading-tight">RMUTT CWIE<br/>International</h1>
         </div>
         
