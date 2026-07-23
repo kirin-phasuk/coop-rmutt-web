@@ -466,7 +466,7 @@ export default function App() {
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 print:h-auto print:block">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-10 flex-shrink-0 print:hidden">
+      <aside className="w-70 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-10 flex-shrink-0 print:hidden">
         <div className="p-5 border-b border-slate-800 flex items-center gap-3">
           <img src="/logoRMUTT-color.png" alt="RMUTT Logo" className="w-20 h-20 object-contain shrink-0" />
           <h1 className="text-lg md:text-xl font-bold text-white leading-tight">RMUTT CWIE<br/>International</h1>
@@ -2112,10 +2112,11 @@ function PrintApplicationForm({ student }) {
          <div>
             <h1 className="text-xl font-bold">มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</h1>
          </div>
-         <div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>
+         {/*<div className="ml-auto mr-[40mm] font-bold text-sm">สก ๐๓</div>*/}
       </div>
 
       <h2 className="text-2xl font-bold text-center mb-8">ใบสมัครงาน</h2>
+      <h5 className="text-2xl font-bold text-center mb-8">(Job application form)</h5>
 
       {/* ส่วนข้อมูล */}
       <div className="space-y-6 text-sm leading-relaxed">
@@ -2126,30 +2127,30 @@ function PrintApplicationForm({ student }) {
         </div>
 
         <div className="flex items-end gap-2">
-          <span className="whitespace-nowrap">ระยะเวลาปฏิบัติงาน (Period of work) จาก</span>
+          <span className="whitespace-nowrap">ระยะเวลาปฏิบัติงาน (Period of work) จาก (from)</span>
           <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.startDate ? new Date(student.startDate).toLocaleDateString('th-TH') : '-'}</span>
-          <span className="whitespace-nowrap">ถึง</span>
+          <span className="whitespace-nowrap">ถึง (until)</span>
           <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.endDate ? new Date(student.endDate).toLocaleDateString('th-TH') : '-'}</span>
         </div>
 
         <h3 className="font-bold text-base mt-8 italic">ข้อมูลส่วนตัวนักศึกษา (Student personal data)</h3>
         
         <div className="flex items-end gap-2">
-          <span className="whitespace-nowrap">ชื่อ-นามสกุล</span>
+          <span className="whitespace-nowrap">ชื่อ-นามสกุล (Full Name)</span>
           <span className="border-b border-dotted border-black flex-1 text-blue-800 px-2">{student.prefix}{student.firstName} {student.lastName}</span>
+          <span className="whitespace-nowrap">รหัสนักศึกษา (Student identification No.)</span>
+          <span className="border-b border-dotted border-black px-4 text-center text-blue-800">{student.studentId || '-'}</span>
         </div>
 
         <div className="flex items-end gap-2">
-          <span className="whitespace-nowrap">รหัสนักศึกษา (Student identification No.)</span>
-          <span className="border-b border-dotted border-black px-4 text-center text-blue-800">{student.studentId || '-'}</span>
-          <span className="whitespace-nowrap">สาขาวิชา/คณะ (School)</span>
+          <span className="whitespace-nowrap">คณะ (Faculty)</span>
           <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.faculty || '-'}</span>
         </div>
 
         <div className="flex items-end gap-2">
           <span className="whitespace-nowrap">เกรดเฉลี่ยสะสม (GPAX)</span>
           <span className="border-b border-dotted border-black w-32 text-center text-blue-800">{student.gpax || '-'}</span>
-          <span className="whitespace-nowrap">คะแนนภาษาอังกฤษ</span>
+          <span className="whitespace-nowrap">คะแนนภาษาอังกฤษ (English test score)</span>
           <span className="border-b border-dotted border-black flex-1 text-center text-blue-800">{student.engTest || '-'}</span>
         </div>
 
